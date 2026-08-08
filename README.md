@@ -24,8 +24,7 @@ frbstl-replication/
 ├── model/      Dynare .mod files, parallel config, saved posterior mode
 ├── data/       observables (.mat + .csv) and the data-build script
 ├── scripts/    MATLAB post-processing + diagnostics; external r* data
-├── note/       LaTeX companion note + derivations appendix + figures/
-└── results/    estimation outputs — COMPLETE; every figure runs without Dynare
+└── note/       LaTeX companion note + derivations appendix + figures/
 ```
 
 ### model/
@@ -66,23 +65,6 @@ frbstl-replication/
 | `frbstl_replication_note.tex` | The companion note (methodology, estimation, results, replication assumptions, references). |
 | `app_derivations.tex` | The full model derivations, `\input` by the note as the appendix. |
 | `figures/` | Where the note looks for its figures (drop the generated PNGs here — see §5). |
-
-### results/  (COMPLETE — every figure regenerates without running Dynare)
-The MATLAB scripts read only the post-estimation `*_results.mat`, not the MH draws, and search
-`results/` first. All four required outputs are now shipped:
-
-| File | Feeds | From |
-|---|---|---|
-| `frbstl_us_est_fastlr_lean_results.mat` | `make_paper_figures`, `diag_forecast`, `diag_gap`, `make_detailed_decomp` | post-estimation run, slimmed to ~20 MB by `scripts/slim_results.m` |
-| `fevd_run_results.mat` | `make_fevd`, `make_irf_panel`, `make_counterfactual` | `dynare fevd_run` |
-| `cond_constrate.mat`, `cond_infltarget.mat` | Fig 8 + counterfactual baseline | post-estimation conditional scenarios |
-
-Each script's search list is ordered so it grabs its correct file first. Run any `make_*`/`diag_*`
-script with no Dynare step. The post-estimation file was **slimmed** by `scripts/slim_results.m`, which
-drops the unused smoother containers (`oo_.Smoother/SmoothedShocks/Constant/UpdatedVariables`, ~50 MB
-each) and keeps `oo_.SmoothedVariables.Mean`; all fields the scripts read are intact. The **MH draws**
-(`frbstl_us_est_fastlr_lean/metropolis/`, ~1 GB) are *not* shipped — they are only needed to re-run the
-post-estimation step or to recover the full posterior distribution, which the point objects already summarize.
 
 ---
 
@@ -211,11 +193,7 @@ The note uses `\graphicspath{{figures/}}`, so only the folder name `figures/` ma
 
 ## 8. Quick start (if the estimation is already done)
 
-**No-Dynare path:** if `results/` contains `frbstl_us_est_fastlr_lean_results.mat` and
-`fevd_run_results.mat`, skip straight to the MATLAB scripts — `make_paper_figures; make_detailed_decomp;
-make_fevd; make_irf_panel; make_counterfactual; diag_gap; diag_forecast` — then build the note (§5).
-
-If you have the posterior draws (`frbstl_us_est_fastlr_lean/metropolis/`) and the mode instead:
+If you already have the posterior draws (`frbstl_us_est_fastlr_lean/metropolis/`) and the mode:
 
 ```
 # post-estimation objects
