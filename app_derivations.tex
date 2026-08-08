@@ -1,0 +1,893 @@
+\section{Preliminaries and notation}
+%======================================================================
+
+The numeraire is the core (non-oil) consumption good, whose price is $P_t$; $\Pi_t\equiv P_t/P_{t-1}$
+is gross core inflation. The nominal price of oil is $P^O_t$ and $p^O_t\equiv P^O_t/P_t$ is the
+real price of oil. Both household types share the same CES consumption aggregator between core
+goods $C_{N,t}$ and oil goods $C_{O,t}$, with elasticity of substitution $\nu_C$ and weight
+$\omega_C$. Because the aggregator appears repeatedly, we first record its gradient.
+
+\begin{lemma}[CES gradient]\label{lem:ces}
+Let
+\begin{equation}\label{eq:ces}
+C_t=\Big[(1-\omega_C)^{\frac{1}{\nu_C}}(\CN)^{\frac{\nu_C-1}{\nu_C}}
++\omega_C^{\frac{1}{\nu_C}}(\CO)^{\frac{\nu_C-1}{\nu_C}}\Big]^{\frac{\nu_C}{\nu_C-1}} .
+\tag{P-4/14}
+\end{equation}
+Then
+\begin{equation}\label{eq:ces-grad}
+\deriv{C_t}{\CN}=(1-\omega_C)^{\frac{1}{\nu_C}}\Big(\frac{C_t}{\CN}\Big)^{\frac{1}{\nu_C}},
+\qquad
+\deriv{C_t}{\CO}=\omega_C^{\frac{1}{\nu_C}}\Big(\frac{C_t}{\CO}\Big)^{\frac{1}{\nu_C}} .
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Write the bracket in \eqref{eq:ces} as $\mathcal B_t$, so $C_t=\mathcal B_t^{\nu_C/(\nu_C-1)}$ and,
+by definition, $\mathcal B_t=C_t^{(\nu_C-1)/\nu_C}$. Differentiating,
+\[
+\deriv{C_t}{\CN}
+=\frac{\nu_C}{\nu_C-1}\,\mathcal B_t^{\frac{\nu_C}{\nu_C-1}-1}\cdot
+(1-\omega_C)^{\frac1{\nu_C}}\frac{\nu_C-1}{\nu_C}(\CN)^{\frac{\nu_C-1}{\nu_C}-1}
+=\mathcal B_t^{\frac{1}{\nu_C-1}}(1-\omega_C)^{\frac1{\nu_C}}(\CN)^{-\frac1{\nu_C}} .
+\]
+Since $\mathcal B_t^{1/(\nu_C-1)}=C_t^{\frac{\nu_C-1}{\nu_C}\cdot\frac{1}{\nu_C-1}}=C_t^{1/\nu_C}$,
+the first identity follows; the second is symmetric.
+\end{proof}
+
+A useful corollary: the marginal utility of the \emph{core} good under log utility $\log C_t$ is
+\begin{equation}\label{eq:muc}
+\deriv{\log C_t}{\CN}=\frac{1}{C_t}\deriv{C_t}{\CN}
+=(1-\omega_C)^{\frac1{\nu_C}}C_t^{\frac1{\nu_C}-1}(\CN)^{-\frac1{\nu_C}} .
+\end{equation}
+
+Throughout, we solve the \emph{sequence} form of each household problem. This is equivalent to the
+paper's recursive (Bellman) statements but makes every first-order condition explicit. Recall that a
+recursion $V_t=\chi_t\,U_t+\beta\,\E_t V_{t+1}$ unrolls to
+$V_0=\E_0\sum_{t\ge0}\beta^t\chi_t U_t$, so the marginal-utility shock $\chi_t$ simply multiplies
+period-$t$ flow utility.
+
+%======================================================================
+\section{Capitalists (eqs.\ 3--12)}
+%======================================================================
+
+\subsection{The problem}
+Capitalists own all firms and physical capital, hold government debt, and choose the utilization
+rate of capital. In sequence form they solve
+\begin{equation}\label{eq:cap-obj}
+\max\ \E_0\sum_{t=0}^\infty \beta^t\,\chi_t\log(C^s_t)
+\end{equation}
+subject to, for every $t$, the CES aggregator \eqref{eq:ces} (with $s$-superscripts), the budget
+constraint (5),
+\begin{align}
+(1+\tau^c)\big[P_t C^s_{N,t}+P^O_t C^s_{O,t}\big]+P_t\frac{B^s_t}{R_t}+P_t I_t
+&=P_{t-1}B^s_{t-1}+(1-\tau^k_t)P_t\big(\nu_t R^k_t K_{t-1}+D_t\big)\nonumber\\
+&\quad-P_t A(\nu_t)K_{t-1}+P_t T_t+P^O_t O_{S,t},\tag{P-5}\label{eq:cap-bc}
+\end{align}
+and the law of motion for capital (6),
+\begin{equation}\label{eq:cap-lom}
+K_t=(1-\delta)K_{t-1}+\zeta_t\big[1-S(I_t/I_{t-1})\big]I_t .
+\tag{P-6}
+\end{equation}
+The controls are $\{C^s_{N,t},C^s_{O,t},B^s_t,I_t,K_t,\nu_t\}$. Note $I_{t-1}$ is a state because
+the adjustment cost $S(I_t/I_{t-1})$ links consecutive investment levels.
+
+\subsection{Lagrangian}
+Attach multiplier $\beta^t\Lambda_t$ to \eqref{eq:cap-bc} and $\beta^t\Xi_t$ to \eqref{eq:cap-lom}.
+Here $\Lambda_t$ is the marginal utility of a period-$t$ \emph{nominal dollar}, and $\Xi_t$ the
+marginal utility value of an extra unit of installed capital. The Lagrangian is
+\begin{align}
+\mathcal L=\E_0\sum_{t=0}^\infty \beta^t\Big\{&\chi_t\log C^s_t
++\Lambda_t\Big[P_{t-1}B^s_{t-1}+(1-\tau^k_t)P_t(\nu_t R^k_t K_{t-1}+D_t)-P_tA(\nu_t)K_{t-1}\nonumber\\
+&\quad+P_tT_t+P^O_tO_{S,t}-(1+\tau^c)(P_tC^s_{N,t}+P^O_tC^s_{O,t})-P_t\tfrac{B^s_t}{R_t}-P_tI_t\Big]\nonumber\\
+&+\Xi_t\Big[(1-\delta)K_{t-1}+\zeta_t(1-S(I_t/I_{t-1}))I_t-K_t\Big]\Big\}.\label{eq:cap-lag}
+\end{align}
+
+\subsection{Static consumption allocation \texorpdfstring{$\Rightarrow$}{=>} eq.\ (8)}
+The FOCs for the two consumption goods are
+\begin{align}
+C^s_{N,t}:&\quad \chi_t\deriv{\log C^s_t}{C^s_{N,t}}=\Lambda_t(1+\tau^c)P_t,\label{eq:cap-cn}\\
+C^s_{O,t}:&\quad \chi_t\deriv{\log C^s_t}{C^s_{O,t}}=\Lambda_t(1+\tau^c)P^O_t.\label{eq:cap-co}
+\end{align}
+Using \eqref{eq:muc} and its oil analogue and dividing \eqref{eq:cap-co} by \eqref{eq:cap-cn},
+\[
+\Big(\frac{\omega_C}{1-\omega_C}\Big)^{\frac1{\nu_C}}\Big(\frac{C^s_{O,t}}{C^s_{N,t}}\Big)^{-\frac1{\nu_C}}
+=\frac{P^O_t}{P_t}
+\ \Longrightarrow\
+\frac{C^s_{O,t}}{C^s_{N,t}}=\frac{\omega_C}{1-\omega_C}\Big(\frac{P_t}{P^O_t}\Big)^{\nu_C}.
+\]
+Hence
+\begin{equation}\label{eq:8}
+\boxed{\,C^s_{O,t}=\Big(\frac{P_t}{P^O_t}\Big)^{\nu_C}\frac{\omega_C}{1-\omega_C}\,C^s_{N,t}\,}
+\tag{P-8}
+\end{equation}
+which is the paper's oil-consumption condition. (Oil is a complement when $\nu_C<1$: a higher
+relative oil price lowers the oil share only weakly.)
+
+\subsection{The stochastic discount factor \texorpdfstring{$\Rightarrow$}{=>} eq.\ (7)}
+Define the marginal utility of one unit of the \emph{core good} (the numeraire) as
+$\mu_t\equiv\Lambda_t P_t$. From \eqref{eq:cap-cn} and \eqref{eq:muc},
+\begin{equation}\label{eq:cap-mu}
+\mu_t=\Lambda_tP_t=\frac{\chi_t}{1+\tau^c}(1-\omega_C)^{\frac1{\nu_C}}
+(C^s_t)^{\frac1{\nu_C}-1}(C^s_{N,t})^{-\frac1{\nu_C}} .
+\end{equation}
+The real (core-good) stochastic discount factor between $t$ and $t+k$ is
+$m^s_{t,t+k}\equiv\beta^k\mu_{t+k}/\mu_t$. Substituting \eqref{eq:cap-mu} and cancelling the
+$(1+\tau^c)$ and $(1-\omega_C)^{1/\nu_C}$ constants,
+\begin{equation}\label{eq:7}
+\boxed{\,m^s_{t,t+k}=\beta^k\Big(\frac{\chi_{t+k}}{\chi_t}\Big)
+\Big(\frac{C^s_{t+k}}{C^s_t}\Big)^{-\frac{\nu_C-1}{\nu_C}}
+\Big(\frac{C^s_{N,t+k}}{C^s_{N,t}}\Big)^{-\frac1{\nu_C}}\,}
+\tag{P-7}
+\end{equation}
+where we used $\tfrac1{\nu_C}-1=-\tfrac{\nu_C-1}{\nu_C}$. This is eq.\ (7).
+
+\subsection{Bond Euler equation \texorpdfstring{$\Rightarrow$}{=>} eq.\ (9)}
+$B^s_t$ enters \eqref{eq:cap-lag} at $t$ (cost $-\Lambda_t P_t B^s_t/R_t$) and at $t+1$ (payoff
+$+\Lambda_{t+1}P_t B^s_t$, from the term $P_{t-1}B^s_{t-1}$ dated $t+1$). The FOC is
+\[
+-\beta^t\frac{\Lambda_tP_t}{R_t}+\beta^{t+1}\E_t[\Lambda_{t+1}P_t]=0
+\ \Longrightarrow\
+1=R_t\,\beta\,\E_t\!\Big[\frac{\Lambda_{t+1}}{\Lambda_t}\Big].
+\]
+Convert nominal to real marginal utility with $\Lambda_{t+1}/\Lambda_t=(\mu_{t+1}/\mu_t)(P_t/P_{t+1})$,
+so that $\beta\,\Lambda_{t+1}/\Lambda_t=m^s_{t,t+1}/\Pi_{t+1}$. Adding the convenience-yield wedge
+$\vartheta_t$ (see \hyperref[rem:conv]{Remark~\ref*{rem:conv}}),
+\begin{equation}\label{eq:9}
+\boxed{\,1=R_t\,\E_t\!\Big[\frac{m^s_{t,t+1}}{\Pi_{t+1}}\Big]\vartheta_t\,}
+\tag{P-9}
+\end{equation}
+
+\begin{remark}[Convenience yield]\label{rem:conv}
+The value function (3) as written has no bonds in utility, which yields
+$1=R_t\,\E_t[m^s_{t,t+1}/\Pi_{t+1}]$. The paper's footnote notes that $\vartheta_t$ can be
+micro-founded by a bonds-in-utility term; here we insert it as a reduced-form multiplicative wedge on
+the return to government debt, exactly as in Del~Negro et al.\ (2017). Because $\vartheta_t$ is known
+at $t$ it can be taken outside the expectation.
+\end{remark}
+
+\subsection{Capital utilization \texorpdfstring{$\Rightarrow$}{=>} eq.\ (12)}
+$\nu_t$ enters only the period-$t$ budget, through $(1-\tau^k_t)P_t\nu_t R^k_t K_{t-1}$ (taxed income)
+and $-P_tA(\nu_t)K_{t-1}$ (untaxed cost). Differentiating and dividing by $\Lambda_t P_t K_{t-1}$,
+\begin{equation}\label{eq:util-derived}
+(1-\tau^k_t)\,R^k_t=A'(\nu_t).
+\end{equation}
+
+\begin{remark}[Discrepancy in the utilization condition]\label{rem:util}
+\flag{The paper states eq.\ (12)/(51) as $R^k_t=A'(\nu_t)$}, without the tax factor, and its
+functional-form calibration sets $A'(1)=\kappa_a=\bar R^k$ (p.\ 13), which is consistent with
+$R^k_t=A'(\nu_t)$ but \emph{not} with \eqref{eq:util-derived}. The tension is purely about whether the
+utilization cost $A(\nu_t)K_{t-1}$ is tax-deductible:
+\begin{itemize}[nosep]
+  \item Budget (5) and Tobin's~Q (10) both place $A(\nu_t)$ \emph{outside} the $(1-\tau^k_t)$ bracket
+  (utilization cost \emph{not} deductible). Taken literally this gives \eqref{eq:util-derived}.
+  \item Eq.\ (12) and the calibration $A'(1)=\bar R^k$ require $A(\nu_t)$ to sit \emph{inside} the
+  bracket (cost deductible), which cancels $(1-\tau^k_t)$ from both marginal revenue and marginal cost
+  and yields $R^k_t=A'(\nu_t)$.
+\end{itemize}
+The cleanest internally-consistent reading is: utilization income and cost are taxed symmetrically, so
+the FOC is $R^k_t=A'(\nu_t)$ \emph{and} the term in (10) should read
+$(1-\tau^k_{t+1})\big[\nu_{t+1}R^k_{t+1}-A(\nu_{t+1})\big]$. This matters for the Canadian
+recalibration because it changes the steady-state link between $\bar R^k$, $\kappa_a$, and $\bar\tau^k$.
+I flag it here rather than silently ``correcting'' the paper.
+\end{remark}
+
+\subsection{Capital and Tobin's Q \texorpdfstring{$\Rightarrow$}{=>} eq.\ (10)}
+$K_t$ enters \eqref{eq:cap-lag} at $t$ (through $-\Xi_t K_t$) and at $t+1$ (capital income plus the
+undepreciated stock in the law of motion). Its FOC is
+\[
+-\beta^t\Xi_t+\beta^{t+1}\E_t\Big[\Lambda_{t+1}P_{t+1}\big((1-\tau^k_{t+1})\nu_{t+1}R^k_{t+1}-A(\nu_{t+1})\big)
++\Xi_{t+1}(1-\delta)\Big]=0.
+\]
+Define Tobin's Q in core-good units, $Q^k_t\equiv\Xi_t/\mu_t=\Xi_t/(\Lambda_tP_t)$, so
+$\Xi_t=Q^k_t\mu_t$. Divide the FOC by $\mu_t$ and use $\beta\,\mu_{t+1}/\mu_t=m^s_{t,t+1}$ and
+$\beta\,\Xi_{t+1}/\mu_t=m^s_{t,t+1}Q^k_{t+1}$:
+\begin{equation}\label{eq:10}
+\boxed{\,Q^k_t=\E_t\,m^s_{t,t+1}\Big[(1-\tau^k_{t+1})\nu_{t+1}R^k_{t+1}+(1-\delta)Q^k_{t+1}-A(\nu_{t+1})\Big]\,}
+\tag{P-10}
+\end{equation}
+
+\subsection{Investment \texorpdfstring{$\Rightarrow$}{=>} eq.\ (11)}
+Write $S_t\equiv S(I_t/I_{t-1})$ and $S'_t\equiv S'(I_t/I_{t-1})$. Investment $I_t$ enters
+\eqref{eq:cap-lag} in three places: the budget cost $-\Lambda_tP_tI_t$; the current law of motion
+$\Xi_t\zeta_t(1-S_t)I_t$; and the next-period law of motion through $I_t$ in the denominator of
+$S_{t+1}=S(I_{t+1}/I_t)$. The needed derivatives are
+\[
+\deriv{}{I_t}\big[(1-S_t)I_t\big]=1-S_t-\frac{I_t}{I_{t-1}}S'_t,\qquad
+\deriv{}{I_t}\big[(1-S_{t+1})I_{t+1}\big]=\Big(\frac{I_{t+1}}{I_t}\Big)^2 S'_{t+1},
+\]
+where the second uses $\partial(I_{t+1}/I_t)/\partial I_t=-I_{t+1}/I_t^2$. The FOC is
+\[
+-\beta^t\Lambda_tP_t+\beta^t\Xi_t\zeta_t\Big[1-S_t-\tfrac{I_t}{I_{t-1}}S'_t\Big]
++\beta^{t+1}\E_t\Big[\Xi_{t+1}\zeta_{t+1}\big(\tfrac{I_{t+1}}{I_t}\big)^2 S'_{t+1}\Big]=0.
+\]
+Divide by $\mu_t=\Lambda_tP_t$ and use $\Xi_t/\mu_t=Q^k_t$ and $\beta\,\Xi_{t+1}/\mu_t=m^s_{t,t+1}Q^k_{t+1}$:
+\begin{equation}\label{eq:11}
+\boxed{\,1-Q^k_t\zeta_t\Big[1-S_t-\frac{I_t}{I_{t-1}}S'_t\Big]
+=\E_t\,m^s_{t,t+1}\,Q^k_{t+1}\zeta_{t+1}\Big(\frac{I_{t+1}}{I_t}\Big)^2 S'_{t+1}\,}
+\tag{P-11}
+\end{equation}
+matching eq.\ (11).
+
+\subsection*{Utilization, restated}
+For completeness, the utilization condition derived above is (subject to
+\hyperref[rem:util]{Remark~\ref*{rem:util}}) the paper's
+\begin{equation}\label{eq:12}
+R^k_t=A'(\nu_t).\tag{P-12}
+\end{equation}
+
+%======================================================================
+\section{Workers (eqs.\ 13--18)}
+%======================================================================
+
+\subsection{The problem}
+Workers consume, supply labor (though the \emph{quantity} is chosen by unions, see
+Section~\ref{sec:unions}), receive transfers, and save in government bonds subject to a portfolio
+adjustment cost $\Psi(B^w_t)$. In sequence form,
+\begin{equation}\label{eq:wrk-obj}
+\max\ \E_0\sum_{t=0}^\infty\beta^t\,\chi_t\big[\log(C^w_t)-v(N_t;\xi_t)\big]
+\end{equation}
+subject to the CES aggregator \eqref{eq:ces} (with $w$-superscripts) and the budget constraint (15),
+\begin{equation}\label{eq:wrk-bc}
+(1+\tau^c)\big[P_tC^w_{N,t}+P^O_tC^w_{O,t}\big]+P_t\frac{B^w_t+\Psi(B^w_t)}{R_t}
+=(1-\tau^l_t)W_tN_t+P_{t-1}B^w_{t-1}+P_tT_t+P_tF_t .
+\tag{P-15}
+\end{equation}
+The worker's \emph{own} controls are $\{C^w_{N,t},C^w_{O,t},B^w_t\}$; $N_t$ is taken as given, so the
+labor-disutility term does not enter the worker's consumption/savings FOCs (it reappears in the union
+problem via the MRS). Attach $\beta^t\Lambda^w_t$ to \eqref{eq:wrk-bc}.
+
+\subsection{Static allocation and SDF \texorpdfstring{$\Rightarrow$}{=>} eqs.\ (16)--(17)}
+The two consumption FOCs are identical in form to \eqref{eq:cap-cn}--\eqref{eq:cap-co}, so the oil
+allocation is
+\begin{equation}\label{eq:17}
+\boxed{\,C^w_{O,t}=\Big(\frac{P_t}{P^O_t}\Big)^{\nu_C}\frac{\omega_C}{1-\omega_C}\,C^w_{N,t}\,}
+\tag{P-17}
+\end{equation}
+and, defining $\mu^w_t\equiv\Lambda^w_tP_t$ exactly as in \eqref{eq:cap-mu} (with $w$-quantities), the
+worker SDF $m^w_{t,t+k}\equiv\beta^k\mu^w_{t+k}/\mu^w_t$ is
+\begin{equation}\label{eq:16}
+\boxed{\,m^w_{t,t+k}=\beta^k\Big(\frac{\chi_{t+k}}{\chi_t}\Big)
+\Big(\frac{C^w_{t+k}}{C^w_t}\Big)^{-\frac{\nu_C-1}{\nu_C}}
+\Big(\frac{C^w_{N,t+k}}{C^w_{N,t}}\Big)^{-\frac1{\nu_C}}\,}\tag{P-16}
+\end{equation}
+
+\subsection{Bond Euler with portfolio cost \texorpdfstring{$\Rightarrow$}{=>} eq.\ (18)}
+The novelty relative to the capitalist is that purchasing $B^w_t$ costs
+$P_t(B^w_t+\Psi(B^w_t))/R_t$, so the marginal cost of a bond is $P_t(1+\Psi'(B^w_t))/R_t$. Bonds pay
+off $P_tB^w_t$ next period. The FOC is
+\[
+-\beta^t\frac{\Lambda^w_tP_t\,(1+\Psi'(B^w_t))}{R_t}+\beta^{t+1}\E_t[\Lambda^w_{t+1}P_t]=0
+\ \Longrightarrow\
+1=R_t\,\beta\,\E_t\!\Big[\frac{\Lambda^w_{t+1}}{\Lambda^w_t}\Big]\frac{1}{1+\Psi'(B^w_t)} .
+\]
+Converting to the real SDF as before and adding the convenience yield,
+\begin{equation}\label{eq:18}
+\boxed{\,1=R_t\,\vartheta_t\,\E_t\!\Big[\frac{m^w_{t,t+1}}{\Pi_{t+1}}\,\frac{1}{1+\Psi'(B^w_t)}\Big]\,}
+\tag{P-18}
+\end{equation}
+As the paper notes: with $\Psi'\equiv0$ this collapses to the capitalist Euler (9); as
+$\Psi'\to\infty$ the worker cannot adjust bond holdings and is effectively hand-to-mouth
+(MPC $=1$); a finite $\Psi'$ delivers the intermediate case. Since $\Psi'(B^w_t)$ is known at $t$ it
+can be pulled outside the expectation, giving the paper's displayed form.
+
+%======================================================================
+\section{Labor unions and the wage Phillips curve (eqs.\ 19--26)}\label{sec:unions}
+%======================================================================
+
+\subsection{Labor aggregator: demand and the wage index \texorpdfstring{$\Rightarrow$}{=>} eqs.\ (22)--(23)}
+A competitive aggregator combines varieties $N_t(j)$ into the composite $N_t$ via the CES technology
+(21), $N_t=\big[\int N_t(j)^{1/\mu^w_t}\dd j\big]^{\mu^w_t}$, and solves
+$\max_{N_t,\{N_t(j)\}}W_tN_t-\int W_t(j)N_t(j)\dd j$. Substituting the constraint and taking the FOC
+w.r.t.\ $N_t(j)$,
+\[
+W_t\,\mu^w_t\Big[\!\int\! N_t(i)^{\frac1{\mu^w_t}}\dd i\Big]^{\mu^w_t-1}\frac{1}{\mu^w_t}N_t(j)^{\frac1{\mu^w_t}-1}=W_t(j).
+\]
+Using $\big[\int N_t(i)^{1/\mu^w_t}\dd i\big]^{\mu^w_t-1}=N_t^{(\mu^w_t-1)/\mu^w_t}$ and solving,
+\begin{equation}\label{eq:22}
+\boxed{\,N_t(j)=\Big[\frac{W_t(j)}{W_t}\Big]^{-\frac{\mu^w_t}{\mu^w_t-1}}N_t\,}\tag{P-22}
+\end{equation}
+Substituting \eqref{eq:22} back into the CES aggregator and simplifying gives the implicit wage index
+\begin{equation}\label{eq:23}
+\boxed{\,W_t^{-\frac{1}{\mu^w_t-1}}=\int W_t(j)^{-\frac{1}{\mu^w_t-1}}\dd j\,}\tag{P-23}
+\end{equation}
+Define the (gross) demand elasticity $\varepsilon^w_t\equiv \mu^w_t/(\mu^w_t-1)$, so
+$N_t(j)=(W_t(j)/W_t)^{-\varepsilon^w_t}N_t$; we use this shorthand below.
+
+\subsection{The marginal rate of substitution \texorpdfstring{$\Rightarrow$}{=>} eq.\ (25)}
+The (tax-adjusted) MRS between labor variety $j$ and the core good is
+\[
+\MRS_t(j)=-\frac{1+\tau^c}{1-\tau^l_t}\frac{\partial v(N_t;\xi_t)/\partial N_t(j)}{\partial u(C^w_t)/\partial C^w_{N,t}} .
+\]
+From the disutility (19), $v(N;\xi)=\frac{\bar\xi}{\xi^{1+\varphi}}\int\frac{N(j)^{1+\varphi}}{1+\varphi}\dd j$,
+we get $\partial v/\partial N_t(j)=\frac{\bar\xi}{\xi_t^{1+\varphi}}N_t(j)^\varphi$. Using \eqref{eq:muc}
+for the denominator (with $w$-quantities), $\partial u/\partial C^w_{N,t}
+=(1-\omega_C)^{1/\nu_C}(C^w_t)^{1/\nu_C-1}(C^w_{N,t})^{-1/\nu_C}$, so its reciprocal is
+$(C^w_t)^{(\nu_C-1)/\nu_C}(C^w_{N,t})^{1/\nu_C}/(1-\omega_C)^{1/\nu_C}$. Combining,
+\begin{equation}\label{eq:25}
+\boxed{\,\MRS_t(j)=\frac{(1+\tau^c)\,\bar\xi\,N_t(j)^\varphi\,(C^w_t)^{\frac{\nu_C-1}{\nu_C}}(C^w_{N,t})^{\frac1{\nu_C}}}
+{(1-\tau^l_t)\,\xi_t^{1+\varphi}\,(1-\omega_C)^{\frac1{\nu_C}}}\,}\tag{P-25}
+\end{equation}
+The key property for the wage Phillips curve is that $\MRS_t(j)\propto N_t(j)^{\varphi}$, i.e.
+\begin{equation}\label{eq:mrs-elast}
+\deriv{\MRS_t(j)}{N_t(j)}=\varphi\,\frac{\MRS_t(j)}{N_t(j)} .
+\end{equation}
+
+\subsection{The union's problem and its first-order condition}
+Union $j$ sets the nominal wage $W_t(j)$ to maximize the present value of wage income net of labor
+disutility, subject to Rotemberg costs of changing $W_t(j)$ and to the demand curve \eqref{eq:22}. Its
+recursive payoff (24) is
+\begin{align}
+V^u[W_{t-1}(j)]=\max_{W_t(j)}\ &\big[W_t(j)-P_t\MRS_t(j)\big]N_t(j)
+-P_t\frac{\eta_w}{2}N_t\Big[\frac{W_t(j)}{W_{t-1}(j)}\frac{1}{\Pi^{w,\Ind}_t}-1\Big]^2\nonumber\\
+&+\beta\,\E_t\frac{V^u[W_t(j)]}{\Pi_{t+1}},\tag{P-24}\label{eq:union}
+\end{align}
+with $N_t(j)=(W_t(j)/W_t)^{-\varepsilon^w_t}N_t$. We differentiate \eqref{eq:union} w.r.t.\ $W_t(j)$,
+treating the four sources of dependence in turn.
+
+\note{(i) Wage-income term.}
+Since $\MRS_t(j)\propto N_t(j)^\varphi$ and $N_t(j)$ depends on $W_t(j)$ with
+$\partial N_t(j)/\partial W_t(j)=-\varepsilon^w_t N_t(j)/W_t(j)$, \eqref{eq:mrs-elast} gives
+$\partial\MRS_t(j)/\partial W_t(j)=-\varphi\varepsilon^w_t\MRS_t(j)/W_t(j)$. The product rule then yields
+\begin{align*}
+\deriv{}{W_t(j)}\Big\{[W_t(j)-P_t\MRS_t(j)]N_t(j)\Big\}
+&=N_t(j)\Big[1+\varphi\MRS_t(j)\,\varepsilon^w_t\frac{P_t}{W_t(j)}\Big]\\
+&\quad-[W_t(j)-P_t\MRS_t(j)]\,\varepsilon^w_t\frac{N_t(j)}{W_t(j)} .
+\end{align*}
+
+\note{(ii) Current menu cost.}
+\[
+\deriv{}{W_t(j)}\Big\{-P_t\tfrac{\eta_w}{2}N_t\big[\tfrac{W_t(j)}{W_{t-1}(j)\Pi^{w,\Ind}_t}-1\big]^2\Big\}
+=-\eta_wN_t\frac{P_t}{W_{t-1}(j)\Pi^{w,\Ind}_t}\Big[\frac{W_t(j)}{W_{t-1}(j)\Pi^{w,\Ind}_t}-1\Big].
+\]
+
+\note{(iii) Continuation via the envelope theorem.}
+$W_t(j)$ becomes next period's state. Since $W_{t-1}(j)$ enters $V^u$ only through the menu cost,
+\[
+\deriv{V^u[W_{t-1}(j)]}{W_{t-1}(j)}
+=P_t\eta_wN_t\Big[\frac{W_t(j)}{W_{t-1}(j)\Pi^{w,\Ind}_t}-1\Big]\frac{W_t(j)}{W_{t-1}(j)^2\Pi^{w,\Ind}_t} .
+\]
+Shifting one period forward and discounting by $\beta/\Pi_{t+1}$,
+\[
+\deriv{}{W_t(j)}\Big\{\beta\E_t\tfrac{V^u[W_t(j)]}{\Pi_{t+1}}\Big\}
+=\beta\eta_w\E_t\Big[N_{t+1}\frac{P_{t+1}W_{t+1}(j)}{W_t(j)^2\Pi^{w,\Ind}_{t+1}\Pi_{t+1}}
+\Big(\frac{W_{t+1}(j)}{W_t(j)\Pi^{w,\Ind}_{t+1}}-1\Big)\Big].
+\]
+
+Setting (i)+(ii)+(iii)$=0$ reproduces the paper's union FOC (unnumbered, p.\ 9):
+\begin{align}
+&N_t(j)\Big[1+\varphi\MRS_t(j)\frac{\mu^w_t}{\mu^w_t-1}\frac{P_t}{W_t(j)}\Big]
+-\big[W_t(j)-P_t\MRS_t(j)\big]\frac{\mu^w_t}{\mu^w_t-1}\frac{N_t(j)}{W_t(j)}\nonumber\\
+&\quad-\eta_wN_t\frac{P_t}{W_{t-1}(j)\Pi^{w,\Ind}_t}\Big[\frac{W_t(j)}{W_{t-1}(j)\Pi^{w,\Ind}_t}-1\Big]\nonumber\\
+&\quad+\beta\eta_w\E_tN_{t+1}\frac{P_{t+1}W_{t+1}(j)}{W_t(j)^2\Pi^{w,\Ind}_{t+1}\Pi_{t+1}}
+\Big[\frac{W_{t+1}(j)}{W_t(j)\Pi^{w,\Ind}_{t+1}}-1\Big]=0.\label{eq:union-foc}
+\end{align}
+
+\begin{remark}[Discounting convention]
+The paper's recursion \eqref{eq:union} discounts the continuation by $\beta/\Pi_{t+1}$ rather than by
+the worker's full nominal SDF $m^w_{t,t+1}/\Pi_{t+1}$. We follow the paper's stated form verbatim so
+that the FOC \eqref{eq:union-foc} matches the text term-for-term; this is the convention embedded in
+the published wage Phillips curve (26).
+\end{remark}
+
+\subsection{Symmetry \texorpdfstring{$\Rightarrow$}{=>} the wage Phillips curve (26)}
+Impose the symmetric equilibrium $W_t(j)=W_t$, $N_t(j)=N_t$, $\MRS_t(j)=\MRS_t$, and define gross wage
+inflation $\Pi^w_t\equiv W_t/W_{t-1}$. Two identities simplify \eqref{eq:union-foc}:
+\[
+\frac{W_t}{W_{t-1}\Pi^{w,\Ind}_t}=\frac{\Pi^w_t}{\Pi^{w,\Ind}_t},\qquad
+\frac{P_t}{W_{t-1}\Pi^{w,\Ind}_t}=\frac{P_t}{W_t}\frac{\Pi^w_t}{\Pi^{w,\Ind}_t}.
+\]
+Divide \eqref{eq:union-foc} by $N_t$. The first line becomes, writing $\varepsilon^w_t=\mu^w_t/(\mu^w_t-1)$,
+\[
+\underbrace{1+\varphi\MRS_t\varepsilon^w_t\frac{P_t}{W_t}}_{\text{term (i-a)}}
+-\underbrace{\varepsilon^w_t+\varepsilon^w_t\frac{P_t}{W_t}\MRS_t}_{\text{term (i-b)}}
+=(1-\varepsilon^w_t)+\varepsilon^w_t\frac{P_t}{W_t}\MRS_t(1+\varphi).
+\]
+Now multiply the \emph{entire} divided FOC by the real wage $W_t/P_t$. The first group becomes exactly
+\begin{equation}\label{eq:pc-static}
+\frac{W_t}{P_t}(1-\varepsilon^w_t)+\varepsilon^w_t\MRS_t(1+\varphi)
+=\frac{W_t}{P_t}+\frac{\mu^w_t}{\mu^w_t-1}\Big[\MRS_t(1+\varphi)-\frac{W_t}{P_t}\Big],
+\end{equation}
+which are the first two terms of (26). For the current menu cost, $\tfrac{W_t}{P_t}\times$ term (ii)
+$=-\eta_w\frac{\Pi^w_t}{\Pi^{w,\Ind}_t}\big(\frac{\Pi^w_t}{\Pi^{w,\Ind}_t}-1\big)$. For the
+continuation, use the crucial cancellation
+\[
+\frac{W_t}{P_t}\cdot\frac{P_{t+1}W_{t+1}}{W_t^2\,\Pi^{w,\Ind}_{t+1}\Pi_{t+1}}
+=\frac{P_{t+1}}{P_t\,\Pi_{t+1}}\cdot\frac{W_{t+1}}{W_t}\cdot\frac{1}{\Pi^{w,\Ind}_{t+1}}
+=\frac{\Pi^w_{t+1}}{\Pi^{w,\Ind}_{t+1}},
+\]
+since $P_{t+1}/(P_t\Pi_{t+1})=1$. Collecting all four pieces gives the wage Phillips curve
+\begin{equation}\label{eq:26}
+\boxed{\ \frac{W_t}{P_t}+\frac{\mu^w_t}{\mu^w_t-1}\Big[\MRS_t(1+\varphi)-\frac{W_t}{P_t}\Big]
+-\eta_w\frac{\Pi^w_t}{\Pi^{w,\Ind}_t}\Big(\frac{\Pi^w_t}{\Pi^{w,\Ind}_t}-1\Big)
++\beta\eta_w\E_t\frac{N_{t+1}}{N_t}\frac{\Pi^w_{t+1}}{\Pi^{w,\Ind}_{t+1}}\Big(\frac{\Pi^w_{t+1}}{\Pi^{w,\Ind}_{t+1}}-1\Big)=0\ }
+\tag{P-26}
+\end{equation}
+which is the paper's eq.\ (26).
+
+\begin{remark}[Reading the wage Phillips curve]
+Ignoring adjustment costs ($\eta_w=0$), \eqref{eq:26} reduces to the static labor-supply condition
+$W_t/P_t=\MRS_t(1+\varphi)\,\mu^w_t/(\mu^w_t-1-\mu^w_t)$; more transparently, the flex-wage limit sets
+the real wage as a markup $\mu^w_t$ over the ``competitive'' object $\MRS_t(1+\varphi)$, matching the
+paper's flexible-wage condition $W_t/P_t=\MRS_t(1+\varphi)$ once the markup is normalized. The two
+inflation terms are the standard forward-looking Rotemberg wedge, indexed to $\Pi^{w,\Ind}_t$.
+\end{remark}
+
+%======================================================================
+\section{Goods producers (eqs.\ 27--36)}\label{sec:firms}
+%======================================================================
+
+Production has the same two-layer structure as labor supply: competitive \emph{final} core-good
+producers aggregate a continuum of varieties $k$, and monopolistically competitive \emph{intermediate}
+producers set prices subject to Rotemberg costs. We take the two layers in turn.
+
+\subsection{Final core-good producers: demand and price index \texorpdfstring{$\Rightarrow$}{=>} eq.\ (27)}
+The representative final producer solves, exactly as the labor aggregator,
+\[
+\max_{Y_t,\{Y_t(k)\}} P_tY_t-\int P_t(k)Y_t(k)\dd k
+\qquad\text{s.t.}\qquad
+Y_t=\Big[\int Y_t(k)^{\frac{1}{\mu^p_t}}\dd k\Big]^{\mu^p_t}.
+\]
+Substituting the constraint and taking the FOC w.r.t.\ $Y_t(k)$ (identical algebra to
+\eqref{eq:22}) gives the variety demand curve and, from the zero-profit condition, the price index
+\begin{equation}\label{eq:27}
+\boxed{\,Y_t(k)=\Big[\frac{P_t(k)}{P_t}\Big]^{-\frac{\mu^p_t}{\mu^p_t-1}}Y_t\,},
+\qquad
+\boxed{\,P_t^{-\frac{1}{\mu^p_t-1}}=\int P_t(k)^{-\frac{1}{\mu^p_t-1}}\dd k\,}
+\tag{P-27}
+\end{equation}
+Define the (gross) demand elasticity $\varepsilon^p_t\equiv\mu^p_t/(\mu^p_t-1)$, so
+$Y_t(k)=(P_t(k)/P_t)^{-\varepsilon^p_t}Y_t$.
+
+\subsection{Intermediate producers: cost minimization \texorpdfstring{$\Rightarrow$}{=>} eqs.\ (32)--(35)}
+An intermediate producer of variety $k$ combines a non-oil input $V_t(k)$ and oil $O_{Y,t}(k)$ through
+a CES technology (30) into output, and produces the non-oil input via Cobb--Douglas over utilized
+capital and efficiency labor (31),
+\begin{equation}\label{eq:prod}
+Y_t(k)\le\Big[(1-\omega_Y)^{\frac1{\nu_Y}}V_t(k)^{\frac{\nu_Y-1}{\nu_Y}}
++\omega_Y^{\frac1{\nu_Y}}O_{Y,t}(k)^{\frac{\nu_Y-1}{\nu_Y}}\Big]^{\frac{\nu_Y}{\nu_Y-1}},
+\qquad V_t(k)=\big(K^u_t(k)\big)^\alpha\big(Z_tN_t(k)\big)^{1-\alpha}.
+\end{equation}
+Cost minimization is done in two nested layers.
+
+\note{Layer 1 --- capital vs.\ labor $\Rightarrow$ (32)--(33).}
+Minimizing $W_tN_t(k)+P_tR^k_tK^u_t(k)$ subject to a given $V_t(k)$, the FOCs equate each marginal
+product (times the multiplier) to the input's price. Using $\partial V/\partial K^u=\alpha V/K^u$ and
+$\partial V/\partial N=(1-\alpha)V/N$ and taking the ratio,
+\begin{equation}\label{eq:32}
+\boxed{\,K^u_t(k)=\frac{\alpha}{1-\alpha}\frac{W_t}{P_tR^k_t}\,N_t(k)\,}\tag{P-32}
+\end{equation}
+Substituting \eqref{eq:32} back into the production function gives
+$N_t(k)=V_t(k)\,Z_t^{-(1-\alpha)}\big(\tfrac{1-\alpha}{\alpha}\tfrac{P_tR^k_t}{W_t}\big)^{\alpha}$, and
+total cost collapses to $W_tN_t(k)/(1-\alpha)$ because
+$W_tN+P_tR^k_tK^u=W_tN\big(1+\tfrac{\alpha}{1-\alpha}\big)$. The (per-unit) nominal marginal cost of
+the non-oil input is therefore
+\begin{equation}\label{eq:33}
+\boxed{\,P^V_t=Z_t^{-(1-\alpha)}\Big(\frac{P_tR^k_t}{\alpha}\Big)^\alpha\Big(\frac{W_t}{1-\alpha}\Big)^{1-\alpha}\,}\tag{P-33}
+\end{equation}
+which is independent of $k$ (all firms face the same factor prices), so $P^V_t(k)=P^V_t$.
+
+\note{Layer 2 --- non-oil input vs.\ oil $\Rightarrow$ (34)--(35).}
+Now minimize $P^V_tV_t(k)+P^O_tO_{Y,t}(k)$ subject to the CES aggregator \eqref{eq:prod}. This is
+structurally identical to the household oil-allocation problem, so the input mix is
+\begin{equation}\label{eq:34}
+\boxed{\,V_t(k)=\Big(\frac{1-\omega_Y}{\omega_Y}\Big)\Big(\frac{P^O_t}{P^V_t}\Big)^{\nu_Y}O_{Y,t}(k)\,}\tag{P-34}
+\end{equation}
+For the marginal cost, substitute the conditional factor demands
+$V=Y(1-\omega_Y)(P_tMC_t/P^V_t)^{\nu_Y}$ and $O_Y=Y\omega_Y(P_tMC_t/P^O_t)^{\nu_Y}$ (where the
+multiplier $P_tMC_t$ is the marginal cost) into total cost $P^V_tV+P^O_tO_Y=P_tMC_t\,Y$. Cancelling
+$Y$ and using constant returns yields the CES cost dual
+\begin{equation}\label{eq:35}
+\boxed{\,P_tMC_t=\Big[\omega_Y(P^O_t)^{1-\nu_Y}+(1-\omega_Y)(P^V_t)^{1-\nu_Y}\Big]^{\frac{1}{1-\nu_Y}}\,}\tag{P-35}
+\end{equation}
+which is eq.\ (35). Marginal cost is common across $k$.
+
+\subsection{Pricing: the price NKPC \texorpdfstring{$\Rightarrow$}{=>} eq.\ (36)}
+With marginal cost in hand, the producer's only remaining choice is the nominal price $P_t(k)$, set to
+maximize the present value of nominal profits net of Rotemberg costs. Firms are owned by capitalists,
+so they discount \emph{nominal} payoffs with the capitalists' \emph{nominal} SDF,
+\begin{equation}\label{eq:nomsdf}
+M_{t,t+1}\equiv\frac{m^s_{t,t+1}}{\Pi_{t+1}}
+=\beta\,\frac{\mu_{t+1}}{\mu_t}\,\frac{P_t}{P_{t+1}} .
+\end{equation}
+The pricing problem is
+\[
+V^f[P_{t-1}(k)]=\max_{P_t(k)}\ [P_t(k)-P_tMC_t]Y_t(k)
+-P_t\frac{\eta_p}{2}Y_t\Big[\frac{P_t(k)}{P_{t-1}(k)\Pi^{p,\Ind}_t}-1\Big]^2
++\E_t M_{t,t+1}V^f[P_t(k)],
+\]
+with $Y_t(k)=(P_t(k)/P_t)^{-\varepsilon^p_t}Y_t$. The three pieces of the FOC mirror the union
+problem of Section~\ref{sec:unions} exactly.
+
+\begin{remark}[The firm's discount factor]\label{rem:nomsdf}
+\flag{The paper's recursion (28) writes the continuation as $\E_t m^s_{t,t+1}V^f[\cdot]$}, i.e.\ with
+the \emph{real} SDF, even though the flow payoffs in (28) are nominal (every term carries a price
+level). Because a nominal claim must be priced with the nominal kernel $M_{t,t+1}=m^s_{t,t+1}/\Pi_{t+1}$,
+the extra $1/\Pi_{t+1}$ is exactly what cancels a spurious $\Pi_{t+1}$ in the forward term and delivers
+the published NKPC (36)/(62). Equivalently, one may deflate the whole problem and discount \emph{real}
+profits by $m^s_{t,t+1}$. We use the nominal kernel \eqref{eq:nomsdf} so the result matches the paper.
+\end{remark}
+
+\note{(i) Sales term.}
+$\dfrac{\partial}{\partial P_t(k)}\big\{[P_t(k)-P_tMC_t]Y_t(k)\big\}
+=Y_t(k)\Big[1-\varepsilon^p_t+\varepsilon^p_t\dfrac{P_tMC_t}{P_t(k)}\Big]$, using
+$\partial Y_t(k)/\partial P_t(k)=-\varepsilon^p_tY_t(k)/P_t(k)$.
+
+\note{(ii) Current menu cost.}
+$-\eta_pP_tY_t\dfrac{1}{P_{t-1}(k)\Pi^{p,\Ind}_t}\Big[\dfrac{P_t(k)}{P_{t-1}(k)\Pi^{p,\Ind}_t}-1\Big]$.
+
+\note{(iii) Continuation (envelope).}
+Since $P_{t-1}(k)$ enters $V^f$ only through the menu cost,
+$\partial V^f[P_t(k)]/\partial P_t(k)
+=\eta_pP_{t+1}Y_{t+1}\big[\tfrac{P_{t+1}(k)}{P_t(k)\Pi^{p,\Ind}_{t+1}}-1\big]
+\tfrac{P_{t+1}(k)}{P_t(k)^2\Pi^{p,\Ind}_{t+1}}$, discounted by $M_{t,t+1}$.
+
+Setting (i)+(ii)+(iii)$=0$, imposing symmetry $P_t(k)=P_t$, $Y_t(k)=Y_t$, and writing
+$\Pi_t=P_t/P_{t-1}$, the current menu term becomes
+$-\eta_p(\Pi_t/\Pi^{p,\Ind}_t)(\Pi_t/\Pi^{p,\Ind}_t-1)$, while the continuation --- after the
+$1/\Pi_{t+1}$ in $M_{t,t+1}$ cancels one power of $\Pi_{t+1}$ --- becomes
+$\E_t m^s_{t,t+1}\eta_p(Y_{t+1}/Y_t)(\Pi_{t+1}/\Pi^{p,\Ind}_{t+1})(\Pi_{t+1}/\Pi^{p,\Ind}_{t+1}-1)$.
+Dividing the sales term by $Y_t$ and using
+$1-\varepsilon^p_t+\varepsilon^p_tMC_t=(\mu^p_tMC_t-1)/(\mu^p_t-1)$ (since
+$\varepsilon^p_t=\mu^p_t/(\mu^p_t-1)$), the FOC rearranges to the New Keynesian Phillips curve
+\begin{equation}\label{eq:36}
+\boxed{\,\frac{\Pi_t}{\Pi^{p,\Ind}_t}\Big(\frac{\Pi_t}{\Pi^{p,\Ind}_t}-1\Big)
+=\E_t\Big[m^s_{t,t+1}\frac{Y_{t+1}}{Y_t}\frac{\Pi_{t+1}}{\Pi^{p,\Ind}_{t+1}}
+\Big(\frac{\Pi_{t+1}}{\Pi^{p,\Ind}_{t+1}}-1\Big)\Big]+\frac{1}{\eta_p(\mu^p_t-1)}\big(\mu^p_tMC_t-1\big)\,}
+\tag{P-36}
+\end{equation}
+which is eq.\ (36). In the flexible-price limit ($\eta_p\to\infty$ costs removed, or the static case)
+the last term forces $\mu^p_tMC_t=1$: price equals the markup $\mu^p_t$ over marginal cost, matching
+the paper's flexible-price condition $\bar\mu^pMC_t=1$.
+
+\subsection{Firm profits}
+Nominal profit of variety $k$ is revenue minus factor payments and menu costs. Integrating over the
+symmetric equilibrium ($P_t(k)=P_t$, $Y_t(k)=Y_t$, $\int N_t(k)\dd k=N_t$, etc.), the total profit
+rebated to capitalists is
+\begin{equation}\label{eq:profits}
+\boxed{\,P_tD_t=P_tY_t-W_tN_t-P_tR^k_tK^u_t-P^O_tO_{Y,t}-P_t\frac{\eta_p}{2}Y_t\Big(\frac{\Pi_t}{\Pi^{p,\Ind}_t}-1\Big)^2\,}
+\tag{P-(p.11)}
+\end{equation}
+with $K^u_t=\nu_tK_{t-1}$. This is the paper's (unnumbered) profit identity on p.\ 11 and feeds the
+capitalists' budget constraint \eqref{eq:cap-bc}.
+
+%======================================================================
+\section{Oil market, government, and aggregation (eqs.\ 37--43, 70)}\label{sec:agg}
+%======================================================================
+
+\subsection{Oil market clearing \texorpdfstring{$\Rightarrow$}{=>} eq.\ (37)}
+Capitalists own a stochastic oil endowment $O_{S,t}\equiv o_{S,t}Z_t\xi_t$ (net global supply, riding
+the balanced-growth trend). The economy is closed, so all oil is used domestically --- either consumed
+by households or burned as an intermediate input. With aggregate household oil consumption
+$C_{O,t}\equiv\lambda C^w_{O,t}+(1-\lambda)C^s_{O,t}$ and firm oil demand $O_{Y,t}$, market clearing is
+\begin{equation}\label{eq:37}
+\boxed{\,C_{O,t}+O_{Y,t}=O_{S,t}\,}\tag{P-37}
+\end{equation}
+and the real oil price $p^O_t=P^O_t/P_t$ adjusts to clear it. (This closed-economy assumption is what
+lets the oil terms net out of the resource constraint below.)
+
+\subsection{Government budget constraint \texorpdfstring{$\Rightarrow$}{=>} eq.\ (38)}
+The fiscal authority's budget is an accounting identity equating uses of funds (spending, transfers,
+and repaying maturing debt) to sources (tax revenue and new debt issuance):
+\begin{equation}\label{eq:38}
+\boxed{\,P_tG_t+P_tT_t+P_{t-1}B^g_{t-1}
+=\tau^c(P_tC_{N,t}+P^O_tC_{O,t})+\tau^l_tW_tN_t+\tau^k_tP_t(\nu_tR^k_tK_{t-1}+D_t)+P_t\frac{B^g_t}{R_t}\,}\tag{P-38}
+\end{equation}
+with $C_{j,t}=\lambda C^w_{j,t}+(1-\lambda)C^s_{j,t}$ for $j=N,O$. New debt $B^g_t$ is issued at the
+discount price $1/R_t$; maturing debt $B^g_{t-1}$ is repaid at the previous price level $P_{t-1}$. The
+consumption-tax base spans both core and oil expenditure; labor income is taxed at $\tau^l_t$ and
+capital income plus profits at $\tau^k_t$.
+
+\subsection{Fiscal and monetary rules \texorpdfstring{$\Rightarrow$}{=>} eqs.\ (39)--(41)}
+These are \emph{postulated behavioral rules}, not the outcome of an optimization, so there is nothing
+to ``derive'' --- but it is worth recording their common structure. Each labor- and capital-tax rate
+partially adjusts toward a target that rises with the debt-to-GDP gap, while the policy rate follows a
+smoothed Taylor rule in inflation and the GDP gap:
+\begin{align}
+\tau^l_t&=(\tau^l_{t-1})^{\rho_{\tau,l}}\Big[\bar\tau^l\big(\tfrac{B^g_{t-1}/GDP_{t-1}}{\bar B^g/GDP}\big)^{\phi_{\tau,l}}\Big]^{1-\rho_{\tau,l}},\tag{P-39}\\
+\tau^k_t&=(\tau^k_{t-1})^{\rho_{\tau,k}}\Big[\bar\tau^k\big(\tfrac{B^g_{t-1}/GDP_{t-1}}{\bar B^g/GDP}\big)^{\phi_{\tau,k}}\Big]^{1-\rho_{\tau,k}},\tag{P-40}\\
+R_t&=R_{t-1}^{\rho_r}\Big[\bar r\,\Pi^*_t\big(\tfrac{\Pi_t}{\Pi^*_t}\big)^{\phi_\Pi}\big(\tfrac{GDP_t}{\Gamma_tGDP_{t-1}}\big)^{\phi_Y}\Big]^{1-\rho_r}\mathrm{mp}_t.\tag{P-41}
+\end{align}
+The exponents $\rho$ control inertia; $\phi_{\tau,x}$ set how fast taxes chase the debt ratio (a low
+$\phi_{\tau,x}$ makes debt the residual financing instrument, so fiscal expansions are deficit-financed);
+$\phi_\Pi,\phi_Y$ are the Taylor coefficients; and $\mathrm{mp}_t$ is the monetary-policy shock. The
+consumption tax $\tau^c$ is constant. Note the Taylor rule strips out trend growth $\Gamma_t$ so it
+reacts only to the cyclical component of GDP.
+
+\subsection{Aggregate resource constraint \texorpdfstring{$\Rightarrow$}{=>} eq.\ (70)}
+This is the one genuinely nontrivial aggregation. Sum the worker budget \eqref{eq:wrk-bc}, the
+capitalist budget \eqref{eq:cap-bc}, and the government budget \eqref{eq:38}, using aggregate
+consumption $C_{j,t}=\lambda C^w_{j,t}+(1-\lambda)C^s_{j,t}$. Four equilibrium conditions make almost
+everything cancel:
+\begin{enumerate}[nosep,label=(\roman*)]
+\item \textbf{Bond market clearing:} household holdings equal government debt,
+$\lambda B^w_t+(1-\lambda)B^s_t=B^g_t$, so both the $B_t/R_t$ (issuance) and $B_{t-1}$ (repayment)
+terms cancel between households and government.
+\item \textbf{Portfolio-cost rebate:} $F_t$ is set to return the adjustment cost, $F_t=\Psi(B^w_t)/R_t$,
+so the $\Psi$ term drops out (no resource is lost to portfolio frictions).
+\item \textbf{Transfers and taxes:} households receive $T_t$ that the government pays; the consumption-,
+labor-, and capital-tax revenues on the government's source side cancel the corresponding $\tau^c$,
+$\tau^l$, $\tau^k$ wedges on the households' use/source sides, leaving pre-tax quantities.
+\item \textbf{Firm profits:} substitute the profit identity \eqref{eq:profits}.
+\end{enumerate}
+After the cancellations in (i)--(iii), the summed constraint reads
+\begin{equation}\label{eq:rc-star}
+P_tC_{N,t}+P^O_tC_{O,t}+P_tI_t+P_tG_t
+=W_tN_t+P_t\nu_tR^k_tK_{t-1}+P_tD_t-P_tA(\nu_t)K_{t-1}+P^O_tO_{S,t}.
+\end{equation}
+Now insert $P_tD_t$ from \eqref{eq:profits} with $K^u_t=\nu_tK_{t-1}$: the wage bill $W_tN_t$ and the
+capital-rental bill $P_t\nu_tR^k_tK_{t-1}$ cancel, leaving
+\[
+P_tC_{N,t}+P^O_tC_{O,t}+P_tI_t+P_tG_t
+=P_tY_t-P^O_tO_{Y,t}-P_t\tfrac{\eta_p}{2}Y_t\big(\tfrac{\Pi_t}{\Pi^{p,\Ind}_t}-1\big)^2
+-P_tA(\nu_t)K_{t-1}+P^O_tO_{S,t}.
+\]
+Finally apply oil market clearing \eqref{eq:37}: $P^O_t(O_{S,t}-O_{Y,t})=P^O_tC_{O,t}$ cancels the
+$P^O_tC_{O,t}$ on the left. Dividing by $P_t$ gives the core-goods resource constraint
+\begin{equation}\label{eq:70}
+\boxed{\,C_{N,t}+G_t+I_t=Y_t\Big[1-\frac{\eta_p}{2}\Big(\frac{\Pi_t}{\Pi^{p,\Ind}_t}-1\Big)^2\Big]-A(\nu_t)K_{t-1}\,}\tag{P-70}
+\end{equation}
+Core output is absorbed by core consumption, government purchases, and investment, minus the resources
+lost to price-adjustment and capital-utilization costs. \emph{All oil terms have vanished}: because the
+economy is closed and the endowment is domestically owned, oil is a pure intermediate/consumption wash
+in the core-good market. (The paper's eq.\ (70) is the detrended counterpart of \eqref{eq:70}.)
+
+\subsection{GDP and headline inflation \texorpdfstring{$\Rightarrow$}{=>} eqs.\ (42)--(43)}
+\textbf{GDP.} Model GDP is core output plus the value of oil \emph{net} of the oil used up as an
+intermediate input (to avoid double-counting the latter):
+\begin{equation}\label{eq:42}
+\boxed{\,GDP_t=Y_t+p^O_t\big(O_{S,t}-O_{Y,t}\big)\,}\tag{P-42}
+\end{equation}
+Using \eqref{eq:37}, $O_{S,t}-O_{Y,t}=C_{O,t}$, so $GDP_t=Y_t+p^O_tC_{O,t}$: value added equals core
+output plus final oil consumption.
+
+\medskip
+\noindent\textbf{Headline inflation.} The consumption-based price index dual to the CES aggregator
+\eqref{eq:ces} --- the minimum core-good expenditure buying one unit of $C_t$ --- is
+$P^c_t=\big[(1-\omega_C)P_t^{1-\nu_C}+\omega_C(P^O_t)^{1-\nu_C}\big]^{1/(1-\nu_C)}$ (same dual as
+\eqref{eq:35}). Headline inflation is $\Pi^h_t\equiv P^c_t/P^c_{t-1}$. Factoring $P_t^{1-\nu_C}$ from
+the numerator and $P_{t-1}^{1-\nu_C}$ from the denominator and using $p^O_t=P^O_t/P_t$,
+\begin{equation}\label{eq:43}
+\boxed{\,\Pi^h_t=\Pi_t\times\Big[\frac{1-\omega_C+\omega_C(p^O_t)^{1-\nu_C}}{1-\omega_C+\omega_C(p^O_{t-1})^{1-\nu_C}}\Big]^{\frac{1}{1-\nu_C}}\,}\tag{P-43}
+\end{equation}
+i.e.\ core inflation $\Pi_t$ scaled by the change in the relative-oil-price adjustment of the
+consumption basket. This is the model's counterpart to headline (vs.\ core) PCE inflation.
+
+%======================================================================
+\section{Detrending: from levels to the stationary system (eqs.\ 44--95)}\label{sec:detrend}
+%======================================================================
+
+The model has two stochastic trends: labor-augmenting TFP $Z_t$ (growth $\Gamma^Z_t$) and the labor
+disutility shifter $\xi_t$ (growth $\Gamma^N_t$). Most real quantities inherit the composite trend
+$Z_t\xi_t$, with gross growth $\Gamma_t\equiv\Gamma^Z_t\Gamma^N_t$. To obtain a stationary system we
+divide each variable by its trend.
+
+\subsection{The change of variables}
+For a generic real quantity $X_t$ (consumption, investment, capital, output, government spending,
+transfers, real bonds), set
+\begin{equation}\label{eq:detrend-rule}
+x_t\equiv\frac{X_t}{Z_t\xi_t},\qquad
+n_t\equiv\frac{N_t}{\xi_t}\ \text{(hours)},\qquad
+w_t\equiv\frac{W_t/P_t}{Z_t}\ \text{(real wage)} .
+\end{equation}
+Hours are scaled by $\xi_t$ only and the real wage by $Z_t$ only; this keeps the real wage bill
+$\tfrac{W_t}{P_t}N_t=w_tn_t\,Z_t\xi_t$ on the composite trend. Prices, gross rates, ratios, the
+utilization rate, Tobin's Q, real marginal cost, the markups, and the tax rates are already stationary.
+The real oil price $p^O_t=P^O_t/P_t$ is stationary (the oil endowment $O_{S,t}=o_{S,t}Z_t\xi_t$ rides
+the trend, and $o_{S,t}$ is stationary). Two facts are used repeatedly:
+\begin{equation}\label{eq:trend-facts}
+\frac{X_{t+1}}{X_t}=\frac{x_{t+1}}{x_t}\,\Gamma_{t+1},
+\qquad
+\frac{X_{t-1}}{Z_t\xi_t}=\frac{x_{t-1}}{\Gamma_t},
+\qquad
+\frac{P_{t-1}}{P_t}=\frac1{\Pi_t}.
+\end{equation}
+We show the trend algebra on the conditions where it actually bites; the rest follow by the same
+substitution.
+
+\subsection{Where the trend bites: worked cases}
+
+\note{Stochastic discount factors (44)/(49).}
+In $m^s_{t,t+1}=\beta(\tfrac{\chi_{t+1}}{\chi_t})(\tfrac{C^s_{t+1}}{C^s_t})^{-\frac{\nu_C-1}{\nu_C}}
+(\tfrac{C^s_{N,t+1}}{C^s_{N,t}})^{-\frac1{\nu_C}}$, each consumption ratio carries a factor
+$\Gamma_{t+1}$ by \eqref{eq:trend-facts}. The two trend exponents sum to
+$-\tfrac{\nu_C-1}{\nu_C}-\tfrac1{\nu_C}=-1$, so exactly one power of $\Gamma_{t+1}$ survives:
+\begin{equation}\label{eq:49d}
+\boxed{\,m^s_{t,t+1}=\frac{\beta}{\Gamma_{t+1}}\Big(\frac{\chi_{t+1}}{\chi_t}\Big)
+\Big(\frac{c^s_{t+1}}{c^s_t}\Big)^{-\frac{\nu_C-1}{\nu_C}}\Big(\frac{c^s_{N,t+1}}{c^s_{N,t}}\Big)^{-\frac1{\nu_C}}\,}\tag{P-49}
+\end{equation}
+and identically for the worker SDF (44). This $\beta/\Gamma_{t+1}$ is the reason trend growth enters
+the steady-state real interest rate below.
+
+\note{Worker budget constraint (46).}
+Divide the levels budget \eqref{eq:wrk-bc} by $P_tZ_t\xi_t$. Consumption terms give
+$(1+\tau^c)(c^w_{N,t}+p^O_tc^w_{O,t})$; the new-bond term $\tfrac{P_tB^w_t}{R_tP_tZ_t\xi_t}=\tfrac{b^w_t}{R_t}$;
+labor income $(1-\tau^l_t)\tfrac{W_t}{P_t}\tfrac{N_t}{Z_t\xi_t}=(1-\tau^l_t)w_tn_t$, which written
+\emph{per worker} (there are $\lambda$ of them, and $n_t$ is aggregate) is $(1-\tau^l_t)w_tn_t/\lambda$;
+the maturing-bond term $\tfrac{P_{t-1}B^w_{t-1}}{P_tZ_t\xi_t}=\tfrac{b^w_{t-1}}{\Pi_t\Gamma_t}$ by
+\eqref{eq:trend-facts}. The portfolio cost $\Psi$ and rebate $F_t$ cancel (Section~\ref{sec:agg}), so
+\begin{equation}\label{eq:46d}
+\boxed{\,(1+\tau^c)(c^w_{N,t}+p^O_tc^w_{O,t})+\frac{b^w_t}{R_t}
+=(1-\tau^l_t)\frac{w_tn_t}{\lambda}+\frac{b^w_{t-1}}{\Pi_t\Gamma_t}+t_t\,}\tag{P-46}
+\end{equation}
+
+\note{Capital law of motion (60) and utilized capital (61).}
+Dividing \eqref{eq:cap-lom} by $Z_t\xi_t$ and using $K_{t-1}/(Z_t\xi_t)=k_{t-1}/\Gamma_t$ and
+$I_t/I_{t-1}=\Gamma_t i_t/i_{t-1}$,
+\begin{equation}\label{eq:60d}
+\boxed{\,k_t=(1-\delta)\frac{k_{t-1}}{\Gamma_t}+\zeta_t\Big[1-S\big(\tfrac{\Gamma_ti_t}{i_{t-1}}\big)\Big]i_t\,},
+\qquad
+\boxed{\,k^u_t=\frac{\nu_t}{\Gamma_t}k_{t-1}\,}\tag{P-60/61}
+\end{equation}
+where $k^u_t=K^u_t/(Z_t\xi_t)=\nu_tK_{t-1}/(Z_t\xi_t)$.
+
+\note{Wage inflation (59) and indexation (58).}
+Since $W_t=w_tZ_tP_t$, gross wage inflation is
+$\Pi^w_t=\tfrac{W_t}{W_{t-1}}=\tfrac{w_t}{w_{t-1}}\tfrac{Z_t}{Z_{t-1}}\tfrac{P_t}{P_{t-1}}
+=\tfrac{w_t}{w_{t-1}}\Gamma^Z_t\Pi_t$, i.e.\ eq.\ (59). Consistently, the wage-indexation term (58)
+carries the extra $\bar\Gamma^Z$ (trend real-wage growth):
+$\Pi^{w,\Ind}_t=\bar\Gamma^Z(\Pi_{t-1})^{\iota_w}(\Pi^*_t)^{1-\iota_w}$.
+
+\note{Non-oil marginal cost (64).}
+In \eqref{eq:33}, $P^V_t/P_t=Z_t^{-(1-\alpha)}(R^k_t/\alpha)^\alpha\big(\tfrac{W_t}{P_t(1-\alpha)}\big)^{1-\alpha}$;
+substituting $\tfrac{W_t}{P_t}=w_tZ_t$ makes the $Z_t^{-(1-\alpha)}$ cancel against $Z_t^{1-\alpha}$, so
+the \emph{real} non-oil marginal cost is stationary:
+\begin{equation}\label{eq:64d}
+\boxed{\,p^V_t=\Big(\frac{R^k_t}{\alpha}\Big)^\alpha\Big(\frac{w_t}{1-\alpha}\Big)^{1-\alpha}\,}\tag{P-64}
+\end{equation}
+
+\note{Price NKPC (62).}
+The only trend in \eqref{eq:36} sits in the forward output ratio: $Y_{t+1}/Y_t=(y_{t+1}/y_t)\Gamma_{t+1}$.
+Hence the detrended NKPC picks up a $\Gamma_{t+1}$,
+\begin{equation}\label{eq:62d}
+\boxed{\,\frac{\Pi_t}{\Pi^{\Ind}_t}\Big(\frac{\Pi_t}{\Pi^{\Ind}_t}-1\Big)
+=\E_t\Big[m^s_{t,t+1}\frac{y_{t+1}}{y_t}\Gamma_{t+1}\frac{\Pi_{t+1}}{\Pi^{\Ind}_{t+1}}\Big(\frac{\Pi_{t+1}}{\Pi^{\Ind}_{t+1}}-1\Big)\Big]
++\frac{\mu^p_tmc_t-1}{\eta_p(\mu^p_t-1)}\,}\tag{P-62}
+\end{equation}
+and the wage NKPC (56) is stationary as written (both $mrs_t$ and $w_t$ are $Z_t$-detrended).
+
+\note{Aggregate resource constraint (70).}
+Dividing the levels constraint \eqref{eq:70} by $Z_t\xi_t$ and using $K_{t-1}/(Z_t\xi_t)=k_{t-1}/\Gamma_t$
+moves the utilization cost onto the trend:
+\begin{equation}\label{eq:70d}
+\boxed{\,c_{N,t}+g_t+i_t+A(\nu_t)\frac{k_{t-1}}{\Gamma_t}=y_t\Big[1-\frac{\eta_p}{2}\Big(\frac{\Pi_t}{\Pi^{\Ind}_t}-1\Big)^2\Big]\,}\tag{P-70}
+\end{equation}
+
+\begin{remark}[The rest of the system]
+Every remaining condition detrends by the same three substitutions \eqref{eq:trend-facts}: the Euler
+equations (45)/(50) are unchanged in form (rates and $m/\Pi$ are stationary); the static consumption
+mixes (47)/(54), MRS (57), production block (63)--(69), oil clearing (74), GDP (75), government budget
+(76), fiscal/Taylor rules (77)--(79), profits (80), and the shock processes (84)--(95) all carry only
+stationary objects once trends are divided out. This reproduces the paper's full list (44)--(95).
+\end{remark}
+
+%======================================================================
+\section{The deterministic steady state}\label{sec:ss}
+%======================================================================
+
+The steady state is the object you re-target for calibration: freeze all detrended variables, set every
+shock to its mean ($\Gamma^Z_t=\bar\Gamma^Z$, $\Gamma^N_t=\bar\Gamma^N$ so $\Gamma_t=\bar\Gamma$;
+$\chi_t=\zeta_t=1$; $\vartheta_t=\bar\vartheta$; $o_{S,t}=\bar o_S$), impose the markups at their means
+$\bar\mu^p,\bar\mu^w$, and set inflation at target $\Pi_t=\Pi^*=\bar\Pi$. Bars denote steady-state
+values. Three simplifications follow immediately:
+\begin{itemize}[nosep]
+\item \textbf{Indexation collapses:} $\Pi^{\Ind}=\bar\Pi$ and $\Pi^{w,\Ind}=\bar\Gamma^Z\bar\Pi$, so
+every Rotemberg gap $(\Pi/\Pi^{\Ind}-1)$ and $(\Pi^w/\Pi^{w,\Ind}-1)$ is zero.
+\item \textbf{Utilization is normalized:} $\bar\nu=1$, $A(1)=0$, $A'(1)=\kappa_a$.
+\item \textbf{Adjustment costs vanish:} at $\bar\nu=1$ and constant investment, $S=S'=0$ (since
+$I_t/I_{t-1}=\bar\Gamma$, the trend around which $S$ is centered).
+\end{itemize}
+Consequently the menu-cost parameters $\eta_p,\eta_w$, the adjustment costs $\psi_i,\sigma_a$, the
+indexation weights $\iota_p,\iota_w$, and all persistences/volatilities \emph{do not enter the steady
+state}: they matter only for dynamics. The steady state is \emph{block-recursive} --- prices first,
+then quantities.
+
+\subsection{Block 1: rates, returns, and prices}
+From the SDFs \eqref{eq:49d}, $\bar m^s=\bar m^w=\beta/\bar\Gamma$. The bond Euler (50) and the NKPC
+\eqref{eq:62d} then give the nominal rate and real marginal cost, and the capital block gives Tobin's Q
+and the rental rate:
+\begin{align}
+\bar m^s=\frac{\beta}{\bar\Gamma},\quad
+\bar R=\frac{\bar\Gamma\,\bar\Pi}{\beta\,\bar\vartheta},\quad
+\bar r=\frac{\bar R}{\bar\Pi}=\frac{\bar\Gamma}{\beta\,\bar\vartheta},\quad
+\overline{mc}=\frac{1}{\bar\mu^p},\quad
+\bar Q^k=\frac{1}{\bar\zeta}=1, \label{eq:ss-prices1}\\[0.3em]
+\bar R^k=\frac{\bar Q^k\big(\bar\Gamma/\beta-(1-\delta)\big)}{1-\bar\tau^k}
+=\frac{\bar\Gamma/\beta-(1-\delta)}{1-\bar\tau^k},\qquad \kappa_a=\bar R^k. \label{eq:ss-prices2}
+\end{align}
+The rental rate $\bar R^k$ comes from the steady-state Tobin's Q (52),
+$\bar Q^k=\bar m^s[(1-\bar\tau^k)\bar R^k+(1-\delta)\bar Q^k]$, solved using $\bar m^s=\beta/\bar\Gamma$;
+$\bar Q^k=1$ uses the investment FOC (53) at $S=S'=0$ with $\bar\zeta=1$. Note the convenience yield
+$\bar\vartheta$ drives a wedge: capital earns gross real return $\bar\Gamma/\beta$ while bonds earn
+$\bar r=\bar\Gamma/(\beta\bar\vartheta)$.
+
+\medskip\noindent
+\textbf{Oil and factor prices.} The oil-price observable is demeaned (obs.\ eq.\ 107), so normalize
+$\bar p^O=1$. From the marginal-cost dual (63) with $\overline{mc}=1/\bar\mu^p$,
+\begin{equation}\label{eq:ss-pv}
+\bar p^V=\Big[\frac{\overline{mc}^{\,1-\nu_Y}-\omega_Y}{1-\omega_Y}\Big]^{\frac{1}{1-\nu_Y}},
+\end{equation}
+and inverting the non-oil marginal cost \eqref{eq:64d} gives the real wage
+\begin{equation}\label{eq:ss-w}
+\bar w=(1-\alpha)\Big(\frac{\alpha}{\bar R^k}\Big)^{\frac{\alpha}{1-\alpha}}\,\bar p^{V\,\frac{1}{1-\alpha}} .
+\end{equation}
+
+\subsection{Block 2: factor ratios and quantities per unit of hours}
+With prices fixed, all input ratios are pinned down. From the non-oil input mix (68), utilized capital
+(61), non-oil production (67), and the oil/non-oil mix (69) with $\bar p^O=1$:
+\begin{equation}\label{eq:ss-ratios}
+\frac{\bar k^u}{\bar n}=\frac{\alpha}{1-\alpha}\frac{\bar w}{\bar R^k},\quad
+\bar k=\bar\Gamma\,\bar k^u,\quad
+\frac{\bar v}{\bar n}=\Big(\frac{\bar k^u}{\bar n}\Big)^{\alpha},\quad
+\frac{\bar o_Y}{\bar v}=\frac{\omega_Y}{1-\omega_Y}\,\bar p^{V\,\nu_Y},
+\end{equation}
+and the investment--capital ratio from the law of motion (60) at $S=0$, $\bar\zeta=1$:
+\begin{equation}\label{eq:ss-ik}
+\frac{\bar i}{\bar k}=\frac{\bar\Gamma-(1-\delta)}{\bar\Gamma}
+\quad\Longrightarrow\quad \frac{\bar i}{\bar n}=\frac{\bar i}{\bar k}\,\bar\Gamma\,\frac{\bar k^u}{\bar n}.
+\end{equation}
+Detrended output per hour $\bar y/\bar n$ follows from the CES production function (66). Because
+production is constant returns in $(k^u,n)$ and all ratios to $\bar n$ are now constants, every
+real quantity on the production side scales linearly with hours $\bar n$. \emph{Choose $\bar n$ as the
+units normalization} (equivalently, back out the disutility constant $\bar\xi$ in Block~4); the level
+of hours is not separately identified because hours enter the observables only in growth rates.
+
+\subsection{Block 3: closing quantities with the great ratios}
+Household oil consumption follows core consumption from the static mix (47)/(54) at $\bar p^O=1$:
+$\bar c_O=\tfrac{\omega_C}{1-\omega_C}\,\bar c_N$. Two accounting identities and the great-ratio targets
+close the system. GDP (75) and the resource constraint \eqref{eq:70d} (at $\bar\nu=1$, zero menu cost)
+are
+\begin{equation}\label{eq:ss-gdp-rc}
+\overline{GDP}=\bar y+\bar p^O\bar c_O=\bar y+\frac{\omega_C}{1-\omega_C}\bar c_N,
+\qquad
+\bar c_N+\bar g+\bar i=\bar y .
+\end{equation}
+With $\bar g=s_g\overline{GDP}$, $\bar t=s_t\overline{GDP}$, $\bar b^g=s_b\overline{GDP}$ (the calibrated
+$\overline{G/GDP}$, $\overline{T/GDP}$, $\overline{B^g/GDP}$; the last quarterly), substitute
+$\bar g$ into the resource constraint and solve the resulting linear pair for core consumption:
+\begin{equation}\label{eq:ss-cn}
+\boxed{\,\bar c_N=\frac{(1-s_g)\,\bar y-\bar i}{1+s_g\,\tfrac{\omega_C}{1-\omega_C}}\,}
+\end{equation}
+after which $\overline{GDP}$, $\bar g$, $\bar t$, $\bar b^g$, $\bar c_O$, and (from oil clearing 74)
+the endowment $\bar o_S=\bar c_O+\bar o_Y$ are all determined.
+
+\subsection{Block 4: households, MRS, and the disutility constant}
+Worker bonds equal their portfolio target, $\bar b^w=\bar B^w$ (so that $\Psi'=0$ and the worker Euler
+(45) coincides with the capitalist Euler (50)); $\bar B^w$ is set to the estimated worker
+bonds-to-output ratio. The worker budget \eqref{eq:46d} then gives worker core consumption
+\begin{equation}\label{eq:ss-cwn}
+\bar c^w_N=\frac{1-\omega_C}{1+\tau^c}\Big[(1-\bar\tau^l)\frac{\bar w\,\bar n}{\lambda}+\bar t
++\bar b^w\frac{1-\beta\bar\vartheta}{\bar\Gamma\bar\Pi}\Big],
+\end{equation}
+using $\tfrac{1}{\bar\Pi\bar\Gamma}-\tfrac{1}{\bar R}=\tfrac{1-\beta\bar\vartheta}{\bar\Gamma\bar\Pi}$.
+The worker consumption bundle simplifies to $\bar c^w=\bar c^w_N/(1-\omega_C)$ at $\bar p^O=1$ (the CES
+price index equals one), so the steady-state MRS (57) collapses to the clean form
+$\overline{mrs}=(1+\tau^c)\bar\xi(\bar n/\lambda)^\varphi\bar c^w/(1-\bar\tau^l)$. The steady-state wage
+Phillips curve (56) --- with the Rotemberg gaps zero --- reduces to a static labor-supply condition,
+\begin{equation}\label{eq:ss-wage}
+\boxed{\,\bar w=\bar\mu^w(1+\varphi)\,\overline{mrs}
+=\bar\mu^w(1+\varphi)\,\frac{(1+\tau^c)\,\bar\xi\,(\bar n/\lambda)^\varphi\,\bar c^w}{1-\bar\tau^l}\,}
+\end{equation}
+which we solve for the disutility constant $\bar\xi$ given the normalization of $\bar n$:
+\begin{equation}\label{eq:ss-xi}
+\bar\xi=\frac{\bar w\,(1-\bar\tau^l)}{\bar\mu^w(1+\varphi)(1+\tau^c)(\bar n/\lambda)^\varphi\,\bar c^w} .
+\end{equation}
+Finally, capitalist consumption is the residual from aggregate consumption
+$\bar c_N=\lambda\bar c^w_N+(1-\lambda)\bar c^s_N$, i.e.\ $\bar c^s_N=(\bar c_N-\lambda\bar c^w_N)/(1-\lambda)$;
+capitalist bonds from bond-market clearing $\bar b^s=(\bar b^g-\lambda\bar b^w)/(1-\lambda)$; and profits
+from (80), $\bar d=\bar y-\bar w\bar n-\bar R^k\bar k^u-\bar p^O\bar o_Y$. By Walras' law the capitalist
+budget and the government budget (76) hold automatically --- a useful numerical check.
+
+\begin{remark}[Steady-state real wage carries the wage markup]\label{rem:wagess}
+\flag{The static condition \eqref{eq:ss-wage} contains the wage markup $\bar\mu^w$}, i.e.\
+$\bar w=\bar\mu^w(1+\varphi)\overline{mrs}$, which is the exact $\eta_w\!\to\!0$ limit of the wage
+Phillips curve (56)/(26) derived in Section~\ref{sec:unions}. The paper's flexible-wage condition on
+p.\ 16 is written $W_t/P_t=MRS_t(1+\varphi)$, dropping the $\bar\mu^w$ factor. For the actual
+(sticky-wage) economy the equilibrium condition (56) is what pins the steady state, so
+\eqref{eq:ss-wage} --- markup included --- is the correct target when calibrating $\bar\xi$ and the
+labor share. Keep this in mind together with \hyperref[rem:util]{Remark~\ref*{rem:util}}
+(the $\bar R^k$/$\kappa_a$/$\bar\tau^k$ link).
+\end{remark}
+
+
+

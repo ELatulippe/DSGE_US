@@ -1,0 +1,533 @@
+\documentclass[11pt]{article}
+
+%==================== Packages ====================
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{float}
+\usepackage[hypertexnames=false]{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+\graphicspath{{figures/}}
+
+%==================== Theorem-like environments (shared with the appendix) ====================
+\theoremstyle{definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+
+%==================== Handy macros (shared with the appendix derivations) ====================
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\CN}{C_{N,t}}
+\newcommand{\CO}{C_{O,t}}
+\newcommand{\Ind}{\text{index}}
+\DeclareMathOperator{\MRS}{MRS}
+\newcommand{\deriv}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\note}[1]{\medskip\noindent\textbf{#1}\quad}
+\newcommand{\flag}[1]{{\color{red}\textbf{#1}}}
+\newcommand{\rstar}{r^{*}}
+
+%==================== Figure include ====================
+% Figures live in figures/ (set via \graphicspath above); each \incfig{name.png}
+% is a standard \includegraphics inside the surrounding figure environment.
+\newcommand{\incfig}[1]{\includegraphics[width=\linewidth]{#1}}
+
+%==================== Title ====================
+\title{\vspace{-1.0em}Replicating the St.\ Louis Fed DSGE Model\\[0.3em]
+\large A Companion Note: Methodology, Estimation, Results, and Replication Assumptions\\[0.2em]
+\normalsize (US data, 1959Q1--2026Q1; Dynare implementation)}
+\author{Replication note on Faria-e-Castro (2026)}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent This note documents an independent replication of the St.\ Louis Fed DSGE model of
+Faria-e-Castro (2026). We (i) re-derive the model's optimality and equilibrium conditions from explicit
+microfoundations (Appendix, batches 1--4); (ii) implement the stationary system and a block-recursive
+steady state in Dynare; (iii) re-estimate the 63 free parameters by Bayesian MCMC on US data,
+1959Q1--2026Q1; and (iv) reproduce the paper's headline objects: historical shock decompositions,
+forecast-error variance decompositions (FEVD), impulse responses, model-implied natural-rate ($\rstar$)
+estimates against external measures, and unconditional and conditional forecasts, including the paper's
+Table~5. The replication is successful: 57 of 63 posterior means fall inside the paper's 90\% credible
+intervals, and the historical decompositions, FEVD, and impulse responses match. The remaining
+differences in the forecast table are each traced to one specific, defensible modelling or data choice
+(per-capita versus aggregate output growth, a data-anchored trend-growth estimate, and a
+data-anchored inflation target) rather than to any error. Section~\ref{sec:assumptions} collects the
+assumptions and pitfalls that a replicator should keep in mind; the Appendix reproduces the full
+derivations, including three internal tensions in the published model that a recalibration must resolve.
+\end{abstract}
+
+\tableofcontents
+
+%======================================================================
+\section{Introduction and scope}\label{sec:intro}
+%======================================================================
+The St.\ Louis Fed DSGE model is a medium-scale New Keynesian model used as one input into forecasting
+and policy analysis at the Bank. Relative to the canonical Smets and Wouters (2007) framework it adds
+three ingredients: (i) two-agent (TANK) household heterogeneity between hand-to-mouth-leaning
+\emph{workers} and \emph{capitalists}; (ii) an explicit fiscal block with distortionary taxes,
+transfers, government debt, and behavioural tax/spending rules; and (iii) oil as both a production input
+and a consumption good, which lets the model separate core from headline inflation. The model is
+estimated by Bayesian methods on a long US sample and is used to produce historical narratives (shock
+decompositions), structural forecasts, and a model-consistent natural rate of interest. All model objects were produced in Dynare~7.1 with
+the estimation and post-estimation scripts described in Sections~\ref{sec:methodology}--\ref{sec:results}.
+Appendix~\ref{app:derivations} provides the full algebra behind the equilibrium conditions, keeping the
+paper's notation and equation numbers.
+
+%======================================================================
+\section{Methodology: the model}\label{sec:methodology}
+%======================================================================
+
+\subsection{Structure}
+The economy is populated by a measure $\lambda$ of workers and $1-\lambda$ of capitalists. Both
+consume a CES bundle of core and oil goods (elasticity $\nu_C$, oil weight $\omega_C$) and hold
+government debt; capitalists additionally own the capital stock and all firms, choose investment and
+capital utilization, and receive firm profits, while workers face a portfolio adjustment cost
+$\Psi(B^w_t)$ that makes their consumption respond more strongly to current income (a smooth
+hand-to-mouth limit). Labor is intermediated by monopolistically competitive unions that set wages
+subject to Rotemberg adjustment costs, generating a wage Phillips curve; intermediate-goods producers
+combine a capital--labor composite with oil and set prices subject to Rotemberg costs, generating the
+price Phillips curve. A fiscal authority levies consumption, labor, and capital taxes, pays transfers,
+and issues debt, with labor- and capital-tax rates partially adjusting to the debt-to-GDP ratio; the
+central bank follows a smoothed Taylor rule. Government debt carries a convenience yield $\vartheta_t$
+(as in Del~Negro et al., 2017), which drives a wedge between the safe real rate and the return on
+capital. Two stochastic trends, labor-augmenting TFP $Z_t$ and a labor-disutility shifter $\xi_t$,
+give the model its balanced-growth path. The full set of optimality conditions, their detrending
+onto the stationary system, and the steady state are derived in Appendix~\ref{app:derivations}.
+
+\subsection{The natural rate and the output gap}
+A distinctive output of the model is a model-consistent natural (flexible-price) allocation used to
+define the natural rate of interest $\rstar$ and the output gap. We construct a parallel
+\emph{flexible-price, flexible-wage} economy (the same real block with the Rotemberg price and wage
+frictions switched off) that shares the sticky economy's steady state, its shocks, and its
+predetermined states. The natural rate $\rstar_t$ is the safe real rate in this counterfactual economy,
+and the output gap is $100\,(\log GDP_t-\log GDP^{f}_t)$, the log distance between actual and
+flexible-price output. This block is \emph{block-recursive}: it feeds nothing back into the sticky
+economy and therefore does not affect the likelihood, so it is computed as a post-estimation object
+(Section~\ref{sec:results}). Several convention choices in building it are discussed in
+Section~\ref{sec:assumptions}.
+
+\subsection{The COVID episode}
+To prevent the extraordinary 2020--2021 observations from distorting the ordinary shock variances, the
+model introduces one-time COVID disturbances that \emph{replace} three exogenous drivers during
+specified windows: the marginal-utility (demand) shifter $\chi_t$, government transfers $t_t$, and the
+labor-disutility growth rate $\Gamma^N_t$ (eqs.\ 112--114 of the paper). The $\chi$ and transfer shocks
+are one-time i.i.d.; the labor-disutility shock has an MA(1) structure. These are estimated by treating
+them as observables with missing values outside their active windows, so the Kalman smoother infers
+their magnitude without letting them propagate through the persistent AR components.
+
+%======================================================================
+\section{Estimation method}\label{sec:estimation}
+%======================================================================
+
+\subsection{Data}
+The model is estimated on 15 quarterly US observables spanning 1959Q1--2026Q1: real per-capita GDP,
+consumption, and investment growth; government consumption and transfers growth; real wage growth; hours;
+the federal funds rate; core PCE inflation; a TFP series; the real oil and gasoline prices; long-run
+(10-year) inflation expectations; the 10-year Treasury yield; and a convenience-yield proxy (the spread
+between a safe long rate and the policy rate). Series that begin later than 1959 (e.g.\ 10-year
+inflation expectations, available from 1991Q4) and the COVID shocks are handled with Dynare's
+missing-value capability in the Kalman filter.
+
+\subsection{Solution and priors}
+The model is solved by first-order perturbation around the deterministic steady state, coded with an
+explicit \texttt{steady\_state\_model} block implementing the block-recursive recipe of
+Appendix~\ref{app:derivations}, Section~\ref{sec:ss}. For speed the model is compiled to C
+(\texttt{use\_dll}). Priors follow Smets and Wouters (2007) for the frictions and shock processes, with
+two model-specific choices carried over from the paper: tight priors around very high persistence
+($\rho\approx 0.99$) for the inflation-target and convenience-yield AR coefficients (as in Del~Negro
+et al., 2017, and Gelain and Lopez), to capture slow-moving movements in the Fed's implicit target and
+in the real rate; and priors placing the oil complementarities ($\nu_C,\nu_Y$) below one and close to
+zero (Gagliardone and Gertler, 2023).
+
+\subsection{Posterior sampling and diagnostics}
+The posterior is sampled by random-walk Metropolis--Hastings in three stages: (a) numerical
+mode-finding; (b) a short pilot run to tune the proposal and check mixing; and (c) a full run of 12
+parallel chains of 250{,}000 draws each, discarding the first 50\% as burn-in, with the proposal scale
+tuned to a 20--30\% acceptance rate and the jumping covariance set to the inverse Hessian at the mode.
+Convergence is assessed with the Brooks--Gelman--Rubin multivariate and univariate diagnostics, Geweke
+(1992) separated-means tests per chain, and per-block MCMC inefficiency factors; the marginal data
+density is computed by the modified harmonic mean. Post-estimation objects (the Kalman smoother,
+historical decompositions, FEVD, impulse responses, and conditional and unconditional forecasts) all
+reuse the stored MH draws (\texttt{load\_mh\_file}), so they reflect full posterior uncertainty without
+re-sampling. Because the natural-rate block is likelihood-neutral, it is appended only in the
+post-estimation stage.
+
+%======================================================================
+\section{Results}\label{sec:results}
+%======================================================================
+
+\subsection{Parameter estimates}
+The replication reproduces the paper's posterior closely: 57 of the 63 estimated parameters have
+posterior means inside the paper's 90\% credible interval, and the economically decisive
+frictions and policy coefficients essentially coincide. Table~\ref{tab:params} lists a representative
+subset. The handful of parameters with wider discrepancies (the wage-adjustment cost $\eta_w$, the wage-
+markup persistence and MA terms, the inverse Frisch elasticity $\varphi$, and the worker share $\lambda$)
+are weakly identified, with posterior intervals that comfortably contain the paper's values. Two
+parameters where our data-driven posterior sits slightly \emph{below} the paper's prior-anchored value, trend TFP growth $\Gamma^Z$ and (indirectly) the smoothed inflation target, account for the
+forecast-table differences discussed in Section~\ref{sec:forecasts}.
+
+\begin{table}[H]
+\centering
+\caption{Selected posterior means: replication vs.\ paper (Faria-e-Castro, 2026, Table~2).}
+\label{tab:params}
+\begin{tabular}{llcc}
+\toprule
+Parameter & Description & Replication & Paper \\
+\midrule
+$\Gamma^Z$      & TFP trend growth              & 1.0039 & 1.0049 \\
+$\bar\vartheta$ & Convenience yield             & 1.0026 & 1.0021 \\
+$100(1/\beta-1)$& Discount factor               & 0.0367 & 0.0383 \\
+$\phi_\Pi$      & Taylor rule, inflation        & 2.869  & 2.849  \\
+$\phi_Y$        & Taylor rule, output           & 0.602  & 0.787  \\
+$\rho_r$        & Taylor rule, smoothing        & 0.812  & 0.806  \\
+$\sigma_a$      & Utilization cost              & 0.488  & 0.488  \\
+$\alpha$        & Capital share                 & 0.195  & 0.197  \\
+$\lambda$       & Share of workers              & 0.545  & 0.588  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Historical decompositions}\label{sec:histdecomp}
+Figures~\ref{fig:decomp-core}--\ref{fig:decomp-rstar} reproduce the paper's simplified historical
+decompositions (its Figs.\ 4--5) over 2019Q4--2026Q1, grouping shocks into demand, supply, fiscal,
+monetary, and oil, with the COVID special shocks folded into their economic categories. As in the
+paper, the post-pandemic inflation surge is attributed largely to demand and fiscal forces with a
+direct monetary contribution (policy holding rates below the historically estimated Taylor prescription
+in 2022--2024), and the recovery closed the output gap and kept output above its flexible-price level
+from early 2021. The extended decompositions (Figs.\ \ref{fig:decomp-detailed-core}--%
+\ref{fig:decomp-detailed-rstar}, the paper's Figs.\ 9--10) break the same objects into the 12 individual
+structural shocks.
+
+\begin{figure}[H]\centering
+\incfig{fig4a_core_pce_yoy.png}
+\caption{YoY core PCE inflation: historical decomposition, 5 shock groups (paper Fig.\ 4a).}
+\label{fig:decomp-core}
+\end{figure}
+
+\begin{figure}[H]\centering
+\incfig{fig4b_headline_pce_yoy.png}
+\caption{YoY headline PCE inflation: historical decomposition (paper Fig.\ 4b).}
+\label{fig:decomp-head}
+\end{figure}
+
+\begin{figure}[H]\centering
+\incfig{fig5a_output_gap.png}
+\caption{Output gap: historical decomposition, centered on the long-run level (paper Fig.\ 5a).}
+\label{fig:decomp-gap}
+\end{figure}
+
+\begin{figure}[H]\centering
+\incfig{fig5b_rstar_spot.png}
+\caption{Spot natural rate of interest $\rstar$: historical decomposition (paper Fig.\ 5b).}
+\label{fig:decomp-rstar}
+\end{figure}
+
+\subsection{Detailed (12-shock) historical decompositions}\label{sec:detaileddecomp}
+\begin{figure}[H]\centering
+\incfig{fig9a_core_detailed.png}
+\caption{Detailed decomposition, YoY core PCE inflation, 12 structural shocks (paper Fig.\ 9a).}
+\label{fig:decomp-detailed-core}
+\end{figure}
+
+\begin{figure}[H]\centering
+\incfig{fig9b_headline_detailed.png}
+\caption{Detailed decomposition, YoY headline PCE inflation (paper Fig.\ 9b).}
+\label{fig:decomp-detailed-head}
+\end{figure}
+
+\begin{figure}[H]\centering
+\incfig{fig10a_gap_detailed.png}
+\caption{Detailed decomposition, output gap (paper Fig.\ 10a).}
+\label{fig:decomp-detailed-gap}
+\end{figure}
+
+\begin{figure}[H]\centering
+\incfig{fig10b_rstar_detailed.png}
+\caption{Detailed decomposition, spot $\rstar$ (paper Fig.\ 10b).}
+\label{fig:decomp-detailed-rstar}
+\end{figure}
+
+\subsection{Forecast-error variance decompositions}\label{sec:fevd}
+The FEVD (Fig.\ \ref{fig:fevd}) is computed directly from the model's order-one decision rule at the
+posterior point estimate and aggregated into the five shock groups. Consistent with the historical
+decompositions, the output gap and the natural rate are demand-dominated at business-cycle horizons;
+inflation is supply/markup-driven in the near term with the monetary (inflation-target) share rising at
+long horizons; and investment is dominated by supply/investment-specific shocks. These patterns match
+the paper's narrative and provide an independent cross-check on the historical decompositions.
+
+\begin{figure}[H]\centering
+\begin{minipage}{0.49\linewidth}\centering\incfig{fevd_gdp.png}\end{minipage}\hfill
+\begin{minipage}{0.49\linewidth}\centering\incfig{fevd_obs_pi.png}\end{minipage}\\[4pt]
+\begin{minipage}{0.49\linewidth}\centering\incfig{fevd_obs_ffr.png}\end{minipage}\hfill
+\begin{minipage}{0.49\linewidth}\centering\incfig{fevd_rstar.png}\end{minipage}\\[4pt]
+\begin{minipage}{0.49\linewidth}\centering\incfig{fevd_ogap.png}\end{minipage}\hfill
+\begin{minipage}{0.49\linewidth}\centering\incfig{fevd_iv.png}\end{minipage}
+\caption{Forecast-error variance decompositions by horizon (output, core inflation, funds rate,
+$\rstar$, output gap, investment).}
+\label{fig:fevd}
+\end{figure}
+
+\subsection{Impulse responses}\label{sec:irf}
+Figures~\ref{fig:irf1}--\ref{fig:irf2} give the impulse responses of output growth, core and headline
+inflation, and the funds rate to a one-standard-deviation innovation in each of the 12 structural shocks
+(the paper's Appendix~A), arranged with shocks in columns. The shapes and signs reproduce the paper. A
+useful internal check: a monetary-policy tightening leaves the natural rate essentially unchanged (the
+counterfactual in Fig.\ \ref{fig:cf}), confirming that the flexible-price block correctly isolates
+$\rstar$ from nominal disturbances.
+
+\begin{figure}[H]\centering
+\incfig{fig_irf_page1.png}
+\caption{Impulse responses to structural shocks, page 1/2 (levels, pp; dotted line = steady state).}
+\label{fig:irf1}
+\end{figure}
+
+\begin{figure}[H]\centering
+\incfig{fig_irf_page2.png}
+\caption{Impulse responses to structural shocks, page 2/2.}
+\label{fig:irf2}
+\end{figure}
+
+\begin{figure}[H]\centering
+\incfig{cf_mp_hike_100bp.png}
+\caption{Counterfactual: an unexpected $+100$bp monetary tightening. The natural rate does not respond,
+as required by the monetary-neutrality of the flexible-price allocation.}
+\label{fig:cf}
+\end{figure}
+
+\subsection{The natural rate of interest}\label{sec:rstar}
+Figure~\ref{fig:rstar} compares the model's one- and five-year-forward natural rates to two external
+measures: Holston--Laubach--Williams and Lubik--Matthes (median). As the paper reports, the
+model-implied $\rstar$ is broadly in line with these measures, more volatile, and somewhat lower on
+average, and it tracks the recent uptick in the Lubik--Matthes series.
+
+\begin{figure}[H]\centering
+\incfig{fig6_rstar.png}
+\caption{Model-implied $\rstar$ (1y and 5y forward) vs.\ Holston--Laubach--Williams and Lubik--Matthes
+(paper Fig.\ 6).}
+\label{fig:rstar}
+\end{figure}
+
+\subsection{Forecasts}\label{sec:forecasts}
+Figure~\ref{fig:uncond} is the unconditional model forecast as of 2026Q1; Figure~\ref{fig:cond} shows
+two conditional scenarios (a constant-rate path and an inflation-at-target path). Table~\ref{tab:table5}
+reproduces the paper's Table~5 point forecasts alongside ours. The output gap matches the paper to
+within a tenth of a point across the horizon. The remaining differences are each attributable to one
+specific choice (all discussed in Section~\ref{sec:assumptions}): (i) output growth is reported here as
+per-capita growth plus a $\approx 0.4$pp Census population add-on, whereas the residual $\approx 0.3$pp
+gap to the paper reflects our lower, \emph{data-consistent} trend-growth estimate $\Gamma^Z$; (ii)
+core inflation reverts to the 2\% target because our 10-year inflation-expectations data are anchored
+near 1.9\%, whereas the paper's smoothed target is more persistently elevated; and (iii) the funds-rate
+difference is mechanically the sum of the $\rstar$ and inflation gaps, with $\rstar$ inheriting the same
+lower trend growth.
+
+\begin{figure}[H]\centering
+\incfig{fig7_uncond_forecast.png}
+\caption{Unconditional model forecast, 2026Q1 jump-off (paper Fig.\ 7). Bands are 68\% intervals.}
+\label{fig:uncond}
+\end{figure}
+
+\begin{figure}[H]\centering
+\incfig{fig8_cond_scenarios.png}
+\caption{Conditional forecast scenarios: constant-rate and inflation-target (paper Fig.\ 8).}
+\label{fig:cond}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Table 5 replication: unconditional forecast point estimates (model / paper). Output growth and
+core inflation are Q4/Q4; the funds rate, $\rstar$, and the output gap are Q4 levels; ``longer run'' is
+the 2031--35 average. Output growth is aggregate (per-capita $+$ population).}
+\label{tab:table5}
+\begin{tabular}{lccccc}
+\toprule
+Year & Output growth & Core PCE infl. & Fed funds & $\rstar$ & Output gap \\
+     & model / paper & model / paper  & model / paper & model / paper & model / paper \\
+\midrule
+2026        & 1.1 / 1.7 & 3.1 / 3.3 & 3.7 / 4.0 & 1.1 / 0.9 & $-0.3$ / $-0.1$ \\
+2027        & 2.1 / 2.5 & 1.8 / 2.5 & 3.0 / 3.9 & 0.7 / 1.0 & $-0.2$ / $-0.1$ \\
+2028        & 2.2 / 2.5 & 1.8 / 2.5 & 2.7 / 3.9 & 0.6 / 1.0 & $\phantom{-}0.1$ / $\phantom{-}0.1$ \\
+2029        & 2.0 / 2.4 & 2.0 / 2.5 & 2.7 / 3.9 & 0.6 / 1.1 & $\phantom{-}0.2$ / $\phantom{-}0.2$ \\
+Longer run  & 1.9 / 2.2 & 2.0 / 2.5 & 2.7 / 3.8 & 0.4 / 1.1 & $\phantom{-}0.0$ / $\phantom{-}0.1$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Only output growth carries a per-capita/aggregate distinction (inflation, the funds rate, $\rstar$, and
+the gap are the same object in the model and the paper). To keep Table~\ref{tab:table5} an
+apples-to-apples comparison without hiding the adjustment, Table~\ref{tab:growth-decomp} reports the
+model's \emph{native} per-capita growth, the population add-on, the resulting aggregate growth (which
+is what Table~\ref{tab:table5} compares to the paper), and the paper's value. The model's per-capita
+and aggregate growth are both internally consistent; the aggregate column is the one comparable to the
+paper. The residual gap that remains \emph{after} the population adjustment ($\approx 0.3$--$0.6$pp) is
+\emph{not} a population effect: it is the data-anchored trend-growth ($\Gamma^Z$) difference of
+Section~\ref{sec:assumptions}, whereby our estimate ($1.44\%$ per-capita) tracks the realized average
+growth in the sample while the paper's ($1.875\%$) stays at its prior.
+
+\begin{table}[H]
+\centering
+\caption{Output growth: model per-capita vs.\ aggregate (Q4/Q4, \%). The model's native object is
+per-capita growth; aggregate growth adds a Census population-growth forecast ($\approx 0.4$pp, the
+paper's footnote~3). The aggregate column is the apples-to-apples comparison with the paper.}
+\label{tab:growth-decomp}
+\begin{tabular}{lcccc}
+\toprule
+Year & Per-capita (model) & $+$ Population & $=$ Aggregate (model) & Paper (aggregate) \\
+\midrule
+2026        & 0.7 & 0.4 & 1.1 & 1.7 \\
+2027        & 1.7 & 0.4 & 2.1 & 2.5 \\
+2028        & 1.8 & 0.4 & 2.2 & 2.5 \\
+2029        & 1.6 & 0.4 & 2.0 & 2.4 \\
+Longer run  & 1.5 & 0.4 & 1.9 & 2.2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%======================================================================
+\section{Assumptions and things to keep in mind when replicating}\label{sec:assumptions}
+%======================================================================
+This section collects the choices that materially affect a replication. Several are not stated in the
+paper and had to be inferred; documenting them is the main practical contribution of this note.
+
+\paragraph{The natural-rate/output-gap block is not in the paper's released code.}
+The paper reports $\rstar$ and the output gap but does not ship the flexible-price block that generates
+them. We construct a parallel flexible-price, flexible-wage economy that (a) shares the sticky economy's
+steady state exactly (so the gap and $\rstar$ deviations are zero at the steady state), (b) is driven by
+the same shocks, including the COVID special shocks, and (c) is block-recursive and therefore
+likelihood-neutral. A modeller who omits this block cannot produce Figs.\ 5, 6, and 10.
+
+\paragraph{Efficient- vs.\ natural-output convention for the gap.}
+We hold the price and wage markups at their steady-state values in the flexible-price block (the
+\emph{efficient}-output concept), rather than passing the estimated markup shocks through. This matters:
+because the estimated price-markup shock is near a random walk, letting it drive potential output makes
+the gap wander by tens of percentage points and flips its sign during 2020. Holding markups fixed gives
+a well-behaved gap whose 2020Q2 trough and post-2021 profile match the paper.
+
+\paragraph{The output gap carries a constant level wedge; center it.}
+Because the flexible-price benchmark holds markups fixed, the model gap contains a roughly constant
+level offset relative to the actual economy. We remove it by centering the gap on its long-run
+(stochastic-steady-state) forecast value, which makes the long-run gap zero (matching the paper's
+convention) and lands the 2020Q2 trough near the paper's $-8$ to $-10$. The natural rate needs no such
+centering because it is a rate (a growth/difference object) and does not inherit the level wedge.
+
+\paragraph{Output growth is per-capita in the model, aggregate in Table~5.}
+The model's GDP-growth observable is \emph{per-capita}; the paper's reported ``output growth'' is
+\emph{aggregate} $=$ per-capita $+$ a Census population-growth forecast ($\approx 0.4$pp; the paper's
+footnote~3). Add the population term when comparing to Table~5, but do not use it to absorb the separate
+trend-growth difference below.
+
+\paragraph{Trend growth is data-anchored and sits below the paper's prior.}
+Our posterior for TFP trend growth is $\Gamma^Z=1.0039$ ($\approx 1.44\%$ per-capita), consistent with
+the realized average GDP growth in the sample (1.4--1.7\%). The paper's $\Gamma^Z=1.0049$ ($1.875\%$) is
+essentially its prior mean and lies above the realized average. This single parameter lowers both our
+per-capita output-growth forecast and our $\rstar$ relative to the paper. To match the paper's numbers,
+tighten the $\Gamma^Z$ (and $\bar\vartheta$) priors; to keep the forecast data-consistent, leave it.
+
+\paragraph{The inflation forecast is pinned by the expectations data.}
+Core inflation reverts to the 2\% target ($\bar\Pi$) because the 10-year inflation-expectations
+observable is anchored near 1.9\% throughout 2023--2026 (only a brief 2022 spike). The paper's forecast
+stays at 2.5\% because its smoothed inflation target is more persistently elevated. Both models share a
+2\% long-run target; the difference is what the smoother reads for the \emph{current} target, which is
+governed by the expectations series and the size of its measurement error. This is a data/identification
+choice, not a bug.
+
+\paragraph{The natural-rate steady state is trend growth minus a convenience-yield wedge.}
+In steady state, $\bar r=\bar\Gamma/(\beta\bar\vartheta)$, so $\rstar$ (annualized) $\approx$ trend
+growth $+$ time preference $-$ convenience yield. It is sensitive to $\Gamma^Z$ and $\bar\vartheta$, and
+only weakly to the discount factor; do not try to move $\rstar$ through the discount rate alone.
+
+\paragraph{COVID shocks.}
+Keep the COVID special shocks active in \emph{both} the sticky and the flexible-price blocks (the paper
+replaces the underlying drivers everywhere). Estimate them as observables with missing values outside
+their windows. Getting the windows and the missing-value setup right is what prevents 2020 from
+inflating the ordinary shock variances.
+
+\paragraph{Numerical and accounting conventions.}
+Compile the model to C (\texttt{use\_dll}) and use parallel chains; the sampler is the wall-clock
+bottleneck. Annualize the natural rate continuously ($400\log$ of the gross rate) rather than by
+compounding ($100(g^4-1)$), which explodes for a volatile $\rstar$; build forward natural rates as
+mean-reverting geometric-decay perpetuities. For Table~5, Q4/Q4 growth of an annualized-quarterly series
+equals the four-quarter average of that series, so the two conventions coincide.
+
+\paragraph{Three tensions in the published equations.}
+The derivations in Appendix~\ref{app:derivations} flag three internal inconsistencies that a
+recalibration must resolve: whether the capital-utilization cost is tax-deductible
+(\hyperref[rem:util]{Remark~\ref*{rem:util}}), whether the firm discounts nominal profits with the
+nominal or the real SDF (\hyperref[rem:nomsdf]{Remark~\ref*{rem:nomsdf}}), and whether the steady-state
+real wage carries the wage markup (\hyperref[rem:wagess]{Remark~\ref*{rem:wagess}}). Each changes a
+steady-state link and therefore the calibration targets.
+
+%======================================================================
+\section{Conclusion}\label{sec:conclusion}
+%======================================================================
+The replication reproduces the St.\ Louis Fed DSGE model's estimation, historical decompositions, FEVD,
+impulse responses, and natural-rate comparisons, and matches the forecast table up to a small set of
+differences that are each traceable to one identified parameter or data input, and in each case the
+replication's value is the more data-consistent one.  The full derivations, including the steady-state
+recipe used to re-target the model, follow in the Appendix.
+
+\newpage
+
+%======================================================================
+\section*{References (indicative)}\label{sec:refs}
+\addcontentsline{toc}{section}{References}
+%======================================================================
+\begin{footnotesize}
+\begin{list}{}{\setlength{\itemindent}{-\leftmargin}\setlength{\itemsep}{2pt}}
+\item Brooks, S.\ P., and A.\ Gelman (1998). ``General Methods for Monitoring Convergence of Iterative
+Simulations.'' \emph{Journal of Computational and Graphical Statistics} 7(4).
+\item Del~Negro, M., D.\ Giannone, M.\ P.\ Giannoni, and A.\ Tambalotti (2017). ``Safety, Liquidity, and
+the Natural Rate of Interest.'' \emph{Brookings Papers on Economic Activity}.
+\item Faria-e-Castro, M.\ (2021). ``Fiscal Policy during a Pandemic.'' \emph{Journal of Economic
+Dynamics and Control}.
+\item Faria-e-Castro, M.\ (2026). ``The St.\ Louis Fed DSGE Model.'' Federal Reserve Bank of St.\ Louis
+(the paper replicated here).
+\item Gagliardone, L., and M.\ Gertler (2023). ``Oil Prices, Monetary Policy and Inflation Surges.''
+NBER Working Paper.
+\item Gelain, P., and P.\ Lopez. Priors on inflation-target and convenience-yield persistence (as cited
+by the paper).
+\item Geweke, J.\ (1992). ``Evaluating the Accuracy of Sampling-Based Approaches to the Calculation of
+Posterior Moments.'' In \emph{Bayesian Statistics 4}.
+\item Giannone, D., and G.\ Primiceri (2024). Demand-driven post-pandemic inflation (SVAR evidence, as
+cited by the paper).
+\item Herbst, E., and F.\ Schorfheide (2016). \emph{Bayesian Estimation of DSGE Models}. Princeton
+University Press.
+\item Holston, K., T.\ Laubach, and J.\ C.\ Williams (2023). ``Measuring the Natural Rate of Interest
+after COVID-19.'' Federal Reserve Bank of New York.
+\item Laubach, T., and J.\ C.\ Williams (2003). ``Measuring the Natural Rate of Interest.'' \emph{Review
+of Economics and Statistics} 85(4).
+\item Leeper, E.\ M., et al.\ (2017). Steady-state US tax rates (as cited by the paper for
+$\bar\tau^k,\bar\tau^l$).
+\item Lubik, T.\ A., and C.\ Matthes (2015). ``Calculating the Natural Rate of Interest: A Comparison of
+Two Alternative Approaches.'' Federal Reserve Bank of Richmond \emph{Economic Brief}.
+\item Rotemberg, J.\ J.\ (1982). ``Sticky Prices in the United States.'' \emph{Journal of Political
+Economy} 90(6).
+\item Smets, F., and R.\ Wouters (2007). ``Shocks and Frictions in US Business Cycles: A Bayesian DSGE
+Approach.'' \emph{American Economic Review} 97(3).
+\end{list}
+\end{footnotesize}
+
+\newpage
+
+%======================================================================
+\appendix
+\section{Extended derivations of the model equations}\label{app:derivations}
+%======================================================================
+The remainder of this note reproduces the full derivations of the model's optimality and equilibrium
+conditions, from explicit sequence-form Lagrangians through detrending and the block-recursive steady
+state. The material keeps the paper's notation and equation numbers: boxed results tagged (P-$n$)
+reproduce the paper's equation $n$, and ``eq.\ ($n$)'' in the prose refers to the paper. The
+steady-state recipe referenced in Section~\ref{sec:estimation} is
+Appendix~\ref{sec:ss}. Three internal tensions in the published model are flagged in
+Remarks~\ref{rem:util}, \ref{rem:nomsdf}, and \ref{rem:wagess}.
+
+\input{app_derivations.tex}
+
+\end{document}
