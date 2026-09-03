@@ -18,7 +18,6 @@
 %==================== Theorem-like environments (shared with the appendix) ====================
 \theoremstyle{definition}
 \newtheorem{lemma}{Lemma}
-\newtheorem{remark}{Remark}
 
 %==================== Handy macros (shared with the appendix derivations) ====================
 \newcommand{\E}{\mathbb{E}}
@@ -29,13 +28,15 @@
 \DeclareMathOperator{\MRS}{MRS}
 \newcommand{\deriv}[2]{\frac{\partial #1}{\partial #2}}
 \newcommand{\note}[1]{\medskip\noindent\textbf{#1}\quad}
-\newcommand{\flag}[1]{{\color{red}\textbf{#1}}}
 \newcommand{\rstar}{r^{*}}
 
 %==================== Figure include ====================
 % Figures live in figures/ (set via \graphicspath above); each \incfig{name.png}
 % is a standard \includegraphics inside the surrounding figure environment.
 \newcommand{\incfig}[1]{\includegraphics[width=\linewidth]{#1}}
+% \incfigw{<fraction>}{<file>} -- same, at a fraction of the text width, used
+% where a full-width figure would push a short block of text onto its own page.
+\newcommand{\incfigw}[2]{\includegraphics[width=#1\linewidth]{#2}}
 
 %==================== Title ====================
 \title{\vspace{-1.0em}Replicating the St.\ Louis Fed DSGE Model\\[0.3em]
@@ -50,18 +51,20 @@
 \begin{abstract}
 \noindent This note documents an independent replication of the St.\ Louis Fed DSGE model of
 Faria-e-Castro (2026). We (i) re-derive the model's optimality and equilibrium conditions from explicit
-microfoundations (Appendix, batches 1--4); (ii) implement the stationary system and a block-recursive
+microfoundations (Appendix~\ref{app:derivations}); (ii) implement the stationary system and a block-recursive
 steady state in Dynare; (iii) re-estimate the 63 free parameters by Bayesian MCMC on US data,
 1959Q1--2026Q1; and (iv) reproduce the paper's headline objects: historical shock decompositions,
 forecast-error variance decompositions (FEVD), impulse responses, model-implied natural-rate ($\rstar$)
 estimates against external measures, and unconditional and conditional forecasts, including the paper's
-Table~5. The replication is successful: 57 of 63 posterior means fall inside the paper's 90\% credible
-intervals, and the historical decompositions, FEVD, and impulse responses match. The remaining
-differences in the forecast table are each traced to one specific, defensible modelling or data choice
-(per-capita versus aggregate output growth, a data-anchored trend-growth estimate, and a
-data-anchored inflation target) rather than to any error. Section~\ref{sec:assumptions} collects the
-assumptions and pitfalls that a replicator should keep in mind; the Appendix reproduces the full
-derivations, including three internal tensions in the published model that a recalibration must resolve.
+Table~5. The replication is successful: 59 of 63 posterior means fall inside the paper's 10th-to-90th
+percentile bands, and the historical decompositions, FEVD, and impulse responses match. The remaining
+differences in the forecast table are each traced to one specific, defensible data choice, a
+data-anchored trend-growth estimate and a data-anchored inflation target, rather than to any error;
+output growth is additionally converted from the model's native per-capita object to the aggregate one
+the paper reports, and Table~\ref{tab:growth-decomp} shows that conversion in full.
+Section~\ref{sec:assumptions} collects the assumptions and pitfalls that a replicator should keep in
+mind; the Appendix reproduces the full derivations, from explicit microfoundations through detrending
+and the block-recursive steady state.
 \end{abstract}
 
 \tableofcontents
@@ -104,10 +107,12 @@ onto the stationary system, and the steady state are derived in Appendix~\ref{ap
 
 \subsection{The natural rate and the output gap}
 A distinctive output of the model is a model-consistent natural (flexible-price) allocation used to
-define the natural rate of interest $\rstar$ and the output gap. We construct a parallel
-\emph{flexible-price, flexible-wage} economy (the same real block with the Rotemberg price and wage
-frictions switched off) that shares the sticky economy's steady state, its shocks, and its
-predetermined states. The natural rate $\rstar_t$ is the safe real rate in this counterfactual economy,
+define the natural rate of interest $\rstar$ and the output gap. Following the paper's Section~2.12, we
+construct a parallel \emph{flexible-price, flexible-wage} economy: the same real block with the
+Rotemberg price and wage frictions switched off, the price and wage markups held at their steady-state
+values $\bar\mu^p,\bar\mu^w$, and inflation held at the Fed's time-varying target, $\Pi^f_t=\Pi^*_t$.
+It shares the sticky economy's steady state, its shocks, and its predetermined states. The natural rate
+$\rstar_t$ is the safe real rate in this counterfactual economy,
 and the output gap is $100\,(\log GDP_t-\log GDP^{f}_t)$, the log distance between actual and
 flexible-price output. This block is \emph{block-recursive}: it feeds nothing back into the sticky
 economy and therefore does not affect the likelihood, so it is computed as a post-estimation object
@@ -132,9 +137,12 @@ The model is estimated on 15 quarterly US observables spanning 1959Q1--2026Q1: r
 consumption, and investment growth; government consumption and transfers growth; real wage growth; hours;
 the federal funds rate; core PCE inflation; a TFP series; the real oil and gasoline prices; long-run
 (10-year) inflation expectations; the 10-year Treasury yield; and a convenience-yield proxy (the spread
-between a safe long rate and the policy rate). Series that begin later than 1959 (e.g.\ 10-year
-inflation expectations, available from 1991Q4) and the COVID shocks are handled with Dynare's
-missing-value capability in the Kalman filter.
+between a safe long rate and the policy rate). Four series begin later than 1959Q1: hours (1964Q2), the
+10-year Treasury yield and the convenience-yield proxy (both 1962Q1), and 10-year inflation expectations
+(1991Q4, the first quarter of the SPF's \texttt{CPI10} series). These, together with the COVID shocks,
+are handled with Dynare's missing-value capability in the Kalman filter. The expectations series is put
+on a PCE basis by subtracting a constant $0.5$pp from the SPF's 10-year CPI expectation, following
+Del~Negro et al.\ (2017).
 
 \subsection{Solution and priors}
 The model is solved by first-order perturbation around the deterministic steady state, coded with an
@@ -149,9 +157,10 @@ zero (Gagliardone and Gertler, 2023).
 
 \subsection{Posterior sampling and diagnostics}
 The posterior is sampled by random-walk Metropolis--Hastings in three stages: (a) numerical
-mode-finding; (b) a short pilot run to tune the proposal and check mixing; and (c) a full run of 12
-parallel chains of 250{,}000 draws each, discarding the first 50\% as burn-in, with the proposal scale
-tuned to a 20--30\% acceptance rate and the jumping covariance set to the inverse Hessian at the mode.
+mode-finding; (b) a short pilot run to tune the proposal and check mixing; and (c) a full run of eight
+parallel chains of 250{,}000 draws each, discarding the first 50\% as burn-in, for one million posterior
+draws. The jumping covariance is the inverse Hessian at the mode and the proposal scale is the one the
+pilot tuned; the acceptance rate settled between 32.1\% and 32.5\% in every chain.
 Convergence is assessed with the Brooks--Gelman--Rubin multivariate and univariate diagnostics, Geweke
 (1992) separated-means tests per chain, and per-block MCMC inefficiency factors; the marginal data
 density is computed by the modified harmonic mean. Post-estimation objects (the Kalman smoother,
@@ -165,14 +174,27 @@ post-estimation stage.
 %======================================================================
 
 \subsection{Parameter estimates}
-The replication reproduces the paper's posterior closely: 57 of the 63 estimated parameters have
-posterior means inside the paper's 90\% credible interval, and the economically decisive
-frictions and policy coefficients essentially coincide. Table~\ref{tab:params} lists a representative
-subset. The handful of parameters with wider discrepancies (the wage-adjustment cost $\eta_w$, the wage-
-markup persistence and MA terms, the inverse Frisch elasticity $\varphi$, and the worker share $\lambda$)
-are weakly identified, with posterior intervals that comfortably contain the paper's values. Two
-parameters where our data-driven posterior sits slightly \emph{below} the paper's prior-anchored value, trend TFP growth $\Gamma^Z$ and (indirectly) the smoothed inflation target, account for the
-forecast-table differences discussed in Section~\ref{sec:forecasts}.
+The replication reproduces the paper's posterior closely: 59 of the 63 estimated parameters have
+posterior means inside the paper's 10th-to-90th percentile band (its Tables~2 and 3), and the
+economically decisive frictions and policy coefficients essentially coincide.
+Table~\ref{tab:params} lists a representative subset. Four parameters fall outside, and two of those
+only marginally: the price menu cost $\eta_p$ ($57.90$ against a lower bound of $59.23$) and the
+Taylor-rule output coefficient $\phi_Y$ ($0.559$ against $0.573$) each miss by less than a twentieth of
+the band width. The two substantive misses are trend TFP growth $\Gamma^Z$ ($1.0039$ against
+$[1.0043,1.0055]$) and the persistence of the measurement error on ten-year inflation expectations
+$\rho_{me,\pi^e}$ ($0.712$ against $[0.854,0.995]$). Those are exactly the two channels behind the
+forecast-table differences discussed in Section~\ref{sec:forecasts}: a data-anchored trend growth and a
+data-anchored inflation target.
+
+One parameter deserves a note because it is the one the corrected utilization condition bears on
+directly. The utilization-cost curvature $\sigma_a$ has a posterior mean of $0.496$ with a 90\% interval
+of $[0.342,0.645]$, an implied posterior standard deviation of about $0.092$ against a prior standard
+deviation of $0.10$: the likelihood supplies roughly a sixth of the total precision, so $\sigma_a$ is
+close to prior-determined. It is essentially unchanged by the tax-wedge correction to the utilization
+first-order condition described in Section~\ref{sec:assumptions}, which moves $\kappa_a$ mechanically by
+the factor $(1-\bar\tau^k)$ but leaves the estimated dynamics where they were. That the data do not
+speak to this elasticity is itself the reason the correction is a matter of internal consistency rather
+than of fit.
 
 \begin{table}[H]
 \centering
@@ -183,14 +205,14 @@ forecast-table differences discussed in Section~\ref{sec:forecasts}.
 Parameter & Description & Replication & Paper \\
 \midrule
 $\Gamma^Z$      & TFP trend growth              & 1.0039 & 1.0049 \\
-$\bar\vartheta$ & Convenience yield             & 1.0026 & 1.0021 \\
-$100(1/\beta-1)$& Discount factor               & 0.0367 & 0.0383 \\
-$\phi_\Pi$      & Taylor rule, inflation        & 2.869  & 2.849  \\
-$\phi_Y$        & Taylor rule, output           & 0.602  & 0.787  \\
-$\rho_r$        & Taylor rule, smoothing        & 0.812  & 0.806  \\
-$\sigma_a$      & Utilization cost              & 0.488  & 0.488  \\
-$\alpha$        & Capital share                 & 0.195  & 0.197  \\
-$\lambda$       & Share of workers              & 0.545  & 0.588  \\
+$\bar\vartheta$ & Convenience yield             & 1.0025 & 1.0021 \\
+$100(1/\beta-1)$& Discount factor               & 0.0393 & 0.0383 \\
+$\phi_\Pi$      & Taylor rule, inflation        & 2.868  & 2.849  \\
+$\phi_Y$        & Taylor rule, output           & 0.559  & 0.787  \\
+$\rho_r$        & Taylor rule, smoothing        & 0.810  & 0.806  \\
+$\sigma_a$      & Utilization cost              & 0.496  & 0.488  \\
+$\alpha$        & Capital share                 & 0.196  & 0.197  \\
+$\lambda$       & Share of workers              & 0.543  & 0.588  \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -263,6 +285,35 @@ inflation is supply/markup-driven in the near term with the monetary (inflation-
 long horizons; and investment is dominated by supply/investment-specific shocks. These patterns match
 the paper's narrative and provide an independent cross-check on the historical decompositions.
 
+\paragraph{Actual and natural output are driven by different things.}
+The five-group aggregation pools technology and markup shocks into ``supply,'' which obscures the
+flexible-price block: the constant-markup convention means $\varepsilon^{\mu^p}$ and
+$\varepsilon^{\mu^w}$ cannot reach $GDP^f$ at all, so any comparison of supply shares across the two
+economies is partly a restatement of the convention. Splitting the group is more informative. At the
+one-quarter horizon the \emph{demand} share is almost identical across the two economies, 73.4\% for
+$GDP$ against 71.7\% for $GDP^f$, and the markup share of actual output is small (0.7\%, rising to
+35.9\% unconditionally as the near-unit-root price markup accumulates). What separates them is
+technology and fiscal policy: technology accounts for 19.6\% of actual output but only 0.4\% of natural
+output, while fiscal shocks account for 4.4\% of actual output and 27.9\% of natural output, rising to
+65.4\% unconditionally. The technology asymmetry follows from detrending. Both series are divided by
+the same stochastic trend $\bar\Gamma$, and the flexible-price allocation tracks that trend almost
+one-for-one, so its detrended deviation is small; the sticky economy adjusts slowly and retains a
+sizeable transitory deviation. The practical implication is that $\rstar$ and the output gap in this
+model are preference and fiscal objects far more than technology objects, which is worth keeping in
+mind when reading Figures~\ref{fig:rstar}, \ref{fig:decomp-detailed-gap} and
+\ref{fig:decomp-detailed-rstar}.
+
+\paragraph{The two output series share their shocks but not their propagation.}
+$\log GDP^f$ has 98\% of the standard deviation of $\log GDP$ and, as just noted, nearly the same
+dominant shock group at impact, yet their Hodrick--Prescott cyclical components ($\lambda=1600$)
+correlate only $0.09$. Identical drivers with different propagation are enough to produce that: the
+sticky economy filters every shock through Rotemberg pricing and the policy rule, while the
+flexible-price economy responds immediately. The low correlation is a statement about propagation, not
+evidence that the flexible-price block is mis-specified. Neither of the two obvious alternatives is a
+better summary: the correlation in levels ($0.72$) is contaminated by the near-unit-root markup wedge
+discussed in Section~\ref{sec:assumptions}, and the correlation in first differences ($0.04$) simply
+over-differences two series that are already stationary.
+
 \begin{figure}[H]\centering
 \begin{minipage}{0.49\linewidth}\centering\incfig{fevd_gdp.png}\end{minipage}\hfill
 \begin{minipage}{0.49\linewidth}\centering\incfig{fevd_obs_pi.png}\end{minipage}\\[4pt]
@@ -304,14 +355,16 @@ as required by the monetary-neutrality of the flexible-price allocation.}
 
 \subsection{The natural rate of interest}\label{sec:rstar}
 Figure~\ref{fig:rstar} compares the model's one- and five-year-forward natural rates to two external
-measures: Holston--Laubach--Williams and Lubik--Matthes (median). As the paper reports, the
+measures: Laubach--Williams (one-sided, US) and Lubik--Matthes (median). As the paper reports, the
 model-implied $\rstar$ is broadly in line with these measures, more volatile, and somewhat lower on
 average, and it tracks the recent uptick in the Lubik--Matthes series.
 
 \begin{figure}[H]\centering
-\incfig{fig6_rstar.png}
-\caption{Model-implied $\rstar$ (1y and 5y forward) vs.\ Holston--Laubach--Williams and Lubik--Matthes
-(paper Fig.\ 6).}
+\incfigw{0.78}{fig6_rstar.png}
+\caption{Model-implied $\rstar$ (1y and 5y forward) vs.\ Laubach--Williams (one-sided) and
+Lubik--Matthes (paper Fig.\ 6). The Laubach--Williams series is the US-only one-sided estimate from the
+New York Fed's current-estimates workbook, 1961Q1--2026Q1; the paper's Fig.\ 6 overlays the
+four-country Holston--Laubach--Williams measure, which differs slightly in level.}
 \label{fig:rstar}
 \end{figure}
 
@@ -328,14 +381,16 @@ near 1.9\%, whereas the paper's smoothed target is more persistently elevated; a
 difference is mechanically the sum of the $\rstar$ and inflation gaps, with $\rstar$ inheriting the same
 lower trend growth.
 
+% Figs 7 and 8 at 0.72 width so the pair shares one page instead of taking two.
 \begin{figure}[H]\centering
-\incfig{fig7_uncond_forecast.png}
+\incfigw{0.72}{fig7_uncond_forecast.png}
 \caption{Unconditional model forecast, 2026Q1 jump-off (paper Fig.\ 7). Bands are 68\% intervals.}
 \label{fig:uncond}
 \end{figure}
 
+\vspace{-0.6em}
 \begin{figure}[H]\centering
-\incfig{fig8_cond_scenarios.png}
+\incfigw{0.72}{fig8_cond_scenarios.png}
 \caption{Conditional forecast scenarios: constant-rate and inflation-target (paper Fig.\ 8).}
 \label{fig:cond}
 \end{figure}
@@ -352,7 +407,7 @@ Year & Output growth & Core PCE infl. & Fed funds & $\rstar$ & Output gap \\
      & model / paper & model / paper  & model / paper & model / paper & model / paper \\
 \midrule
 2026        & 1.1 / 1.7 & 3.1 / 3.3 & 3.7 / 4.0 & 1.1 / 0.9 & $-0.3$ / $-0.1$ \\
-2027        & 2.1 / 2.5 & 1.8 / 2.5 & 3.0 / 3.9 & 0.7 / 1.0 & $-0.2$ / $-0.1$ \\
+2027        & 2.1 / 2.5 & 1.8 / 2.5 & 2.9 / 3.9 & 0.7 / 1.0 & $-0.2$ / $-0.1$ \\
 2028        & 2.2 / 2.5 & 1.8 / 2.5 & 2.7 / 3.9 & 0.6 / 1.0 & $\phantom{-}0.1$ / $\phantom{-}0.1$ \\
 2029        & 2.0 / 2.4 & 2.0 / 2.5 & 2.7 / 3.9 & 0.6 / 1.1 & $\phantom{-}0.2$ / $\phantom{-}0.2$ \\
 Longer run  & 1.9 / 2.2 & 2.0 / 2.5 & 2.7 / 3.8 & 0.4 / 1.1 & $\phantom{-}0.0$ / $\phantom{-}0.1$ \\
@@ -368,8 +423,9 @@ is what Table~\ref{tab:table5} compares to the paper), and the paper's value. Th
 and aggregate growth are both internally consistent; the aggregate column is the one comparable to the
 paper. The residual gap that remains \emph{after} the population adjustment ($\approx 0.3$--$0.6$pp) is
 \emph{not} a population effect: it is the data-anchored trend-growth ($\Gamma^Z$) difference of
-Section~\ref{sec:assumptions}, whereby our estimate ($1.44\%$ per-capita) tracks the realized average
-growth in the sample while the paper's ($1.875\%$) stays at its prior.
+Section~\ref{sec:assumptions}. The composite trend $\bar\Gamma=\bar\Gamma^Z\bar\Gamma^N$, which is what
+per-capita growth reverts to, is $1.40\%$ annualized on our posterior means against $1.875\%$ on the
+paper's; ours tracks the realized average growth in the sample, the paper's stays at its prior.
 
 \begin{table}[H]
 \centering
@@ -396,52 +452,58 @@ Longer run  & 1.5 & 0.4 & 1.9 & 2.2 \\
 This section collects the choices that materially affect a replication. Several are not stated in the
 paper and had to be inferred; documenting them is the main practical contribution of this note.
 
-\paragraph{The natural-rate/output-gap block is not in the paper's released code.}
-The paper reports $\rstar$ and the output gap but does not ship the flexible-price block that generates
-them. We construct a parallel flexible-price, flexible-wage economy that (a) shares the sticky economy's
-steady state exactly (so the gap and $\rstar$ deviations are zero at the steady state), (b) is driven by
-the same shocks, including the COVID special shocks, and (c) is block-recursive and therefore
-likelihood-neutral. A modeller who omits this block cannot produce Figs.\ 5, 6, and 10.
+\paragraph{Build the flexible-price block; it is what generates $\rstar$ and the gap.}
+Section~2.12 of the paper defines the flexible-price economy completely: constant markups
+$\bar\mu^p,\bar\mu^w$, the two Phillips curves replaced by their static counterparts, and inflation at
+the time-varying target $\Pi^f_t=\Pi^*_t$, with $\rstar$ given by its eq.\ (96). Make sure to
+incorporate it. Ours (a) shares the sticky economy's steady state exactly (so the gap and $\rstar$
+deviations are zero at the steady state), (b) is driven by the same shocks, including the COVID special
+shocks, and (c) is block-recursive and therefore likelihood-neutral, which is why it is appended only at
+the post-estimation stage. A modeller who omits this block cannot produce Figs.\ 5, 6, and 10.
 
-\paragraph{Efficient- vs.\ natural-output convention for the gap.}
-We hold the price and wage markups at their steady-state values in the flexible-price block (the
-\emph{efficient}-output concept), rather than passing the estimated markup shocks through. This matters:
-because the estimated price-markup shock is near a random walk, letting it drive potential output makes
-the gap wander by tens of percentage points and flips its sign during 2020. Holding markups fixed gives
-a well-behaved gap whose 2020Q2 trough and post-2021 profile match the paper.
+\paragraph{Why the constant-markup convention matters quantitatively.}
+Holding the markups fixed, as Section~2.12 prescribes, is what makes the gap usable, and it is worth
+saying why: the estimated price-markup shock is near a random walk ($\rho_{\mu^p}\approx0.99$), so
+letting it drive potential output instead makes the gap wander by tens of percentage points and flips
+its sign during 2020. With markups fixed the gap is well behaved and its 2020Q2 trough and post-2021
+profile match the paper. The same reasoning applies to the inflation convention: because government debt
+is nominal and workers are non-Ricardian, inflation is not neutral in the flexible-price economy, so
+using $\Pi^f_t=\Pi^*_t$ rather than a constant $\bar\Pi$ is a substantive choice and not a normalization.
 
-\paragraph{The output gap carries a constant level wedge; center it.}
-Because the flexible-price benchmark holds markups fixed, the model gap contains a roughly constant
-level offset relative to the actual economy. We remove it by centering the gap on its long-run
-(stochastic-steady-state) forecast value, which makes the long-run gap zero (matching the paper's
-convention) and lands the 2020Q2 trough near the paper's $-8$ to $-10$. The natural rate needs no such
-centering because it is a rate (a growth/difference object) and does not inherit the level wedge.
-
-\paragraph{Output growth is per-capita in the model, aggregate in Table~5.}
-The model's GDP-growth observable is \emph{per-capita}; the paper's reported ``output growth'' is
-\emph{aggregate} $=$ per-capita $+$ a Census population-growth forecast ($\approx 0.4$pp; the paper's
-footnote~3). Add the population term when comparing to Table~5, but do not use it to absorb the separate
-trend-growth difference below.
+\paragraph{The output gap carries a slowly wandering level wedge; center it on the long run.}
+Because the flexible-price benchmark holds markups fixed while the estimated price-markup shock is
+close to a random walk ($\rho_{\mu^p}=0.9968$, a half-life of 216 quarters against a 66-year sample),
+that shock moves actual output but not its flexible-price counterpart, and the gap absorbs the
+difference as a level. The wedge averages $+5.2$ percentage points but drifts across decades, from
+$+7.1$ in the 1970s to $+3.2$ in the 2010s, so it is a slowly moving component rather than a constant.
+We remove it by centering the gap on its long-run (stochastic-steady-state) forecast value rather than
+on its sample mean. The long-run gap is then zero by construction, which matches the paper's
+convention, and the 2020Q2 trough lands at $-8.7$, inside the paper's $-8$ to $-10$ range. Centering on
+the sample mean instead would remove $+5.2$ points rather than $+3.3$ and shift every historical
+reading by nearly two percentage points, so the choice is worth stating rather than leaving implicit.
+The natural rate needs no such centering because it is a rate (a growth/difference object) and does not
+inherit the level wedge.
 
 \paragraph{Trend growth is data-anchored and sits below the paper's prior.}
-Our posterior for TFP trend growth is $\Gamma^Z=1.0039$ ($\approx 1.44\%$ per-capita), consistent with
-the realized average GDP growth in the sample (1.4--1.7\%). The paper's $\Gamma^Z=1.0049$ ($1.875\%$) is
-essentially its prior mean and lies above the realized average. This single parameter lowers both our
-per-capita output-growth forecast and our $\rstar$ relative to the paper. To match the paper's numbers,
-tighten the $\Gamma^Z$ (and $\bar\vartheta$) priors; to keep the forecast data-consistent, leave it.
+Our posterior for TFP trend growth is $\Gamma^Z=1.0039$ against the paper's $1.0049$. The forecast
+reverts to the composite trend $\bar\Gamma=\bar\Gamma^Z\bar\Gamma^N$, so the comparable figures are
+$400\log\bar\Gamma$: $1.40\%$ on our posterior means against $1.875\%$ on the paper's. Realized
+per-capita GDP growth averages $1.67\%$ over 1959Q1--2026Q1 and $1.11\%$ since 2000, so our estimate
+sits inside the realized range while the paper's, essentially its prior mean, lies above it. This one
+parameter lowers both our output-growth forecast and our $\rstar$; to match the paper, tighten the
+$\Gamma^Z$ and $\bar\vartheta$ priors, and to keep the forecast data-consistent, leave it.
 
 \paragraph{The inflation forecast is pinned by the expectations data.}
 Core inflation reverts to the 2\% target ($\bar\Pi$) because the 10-year inflation-expectations
-observable is anchored near 1.9\% throughout 2023--2026 (only a brief 2022 spike). The paper's forecast
-stays at 2.5\% because its smoothed inflation target is more persistently elevated. Both models share a
-2\% long-run target; the difference is what the smoother reads for the \emph{current} target, which is
-governed by the expectations series and the size of its measurement error. This is a data/identification
-choice, not a bug.
+observable is anchored near 1.9\% throughout 2023--2026 (only a brief 2022 spike), while the paper's
+smoothed target is more persistently elevated. Both share a 2\% long-run target; the difference is what
+the smoother reads for the \emph{current} one, which is governed by the expectations series and the size
+of its measurement error. This is a data and identification choice.
 
 \paragraph{The natural-rate steady state is trend growth minus a convenience-yield wedge.}
-In steady state, $\bar r=\bar\Gamma/(\beta\bar\vartheta)$, so $\rstar$ (annualized) $\approx$ trend
-growth $+$ time preference $-$ convenience yield. It is sensitive to $\Gamma^Z$ and $\bar\vartheta$, and
-only weakly to the discount factor; do not try to move $\rstar$ through the discount rate alone.
+In steady state $\bar r=\bar\Gamma/(\beta\bar\vartheta)$, so $\rstar$ (annualized) $\approx$ trend
+growth $+$ time preference $-$ convenience yield: sensitive to $\Gamma^Z$ and $\bar\vartheta$, only
+weakly to the discount factor, which cannot move $\rstar$ on its own.
 
 \paragraph{COVID shocks.}
 Keep the COVID special shocks active in \emph{both} the sticky and the flexible-price blocks (the paper
@@ -454,29 +516,27 @@ Compile the model to C (\texttt{use\_dll}) and use parallel chains; the sampler 
 bottleneck. Annualize the natural rate continuously ($400\log$ of the gross rate) rather than by
 compounding ($100(g^4-1)$), which explodes for a volatile $\rstar$; build forward natural rates as
 mean-reverting geometric-decay perpetuities. For Table~5, Q4/Q4 growth of an annualized-quarterly series
-equals the four-quarter average of that series, so the two conventions coincide.
+equals its four-quarter average, so the two conventions coincide.
 
-\paragraph{Three tensions in the published equations.}
-The derivations in Appendix~\ref{app:derivations} flag three internal inconsistencies that a
-recalibration must resolve: whether the capital-utilization cost is tax-deductible
-(\hyperref[rem:util]{Remark~\ref*{rem:util}}), whether the firm discounts nominal profits with the
-nominal or the real SDF (\hyperref[rem:nomsdf]{Remark~\ref*{rem:nomsdf}}), and whether the steady-state
-real wage carries the wage markup (\hyperref[rem:wagess]{Remark~\ref*{rem:wagess}}). Each changes a
-steady-state link and therefore the calibration targets.
+\paragraph{The tax treatment of the utilization cost pins down a calibration target.}
+The cost $A(\nu_t)K_{t-1}$ is \emph{not} deductible: utilization income sits inside the
+$(1-\tau^k_t)$ bracket in (5), (10) and (38), but the cost is met out of after-tax income. The
+utilization condition is therefore the after-tax one, $(1-\tau^k_t)R^k_t=A'(\nu_t)$ (eq.\ 12), with
+$A'(1)=\kappa_a=(1-\bar\tau^k)\bar R^k$ rather than $\bar R^k$. Since $A(1)=0$ the steady state is
+unchanged; only $\kappa_a$ moves, by $(1-\bar\tau^k)$, and with it the dynamics. All three places must
+move together, and pairing either budget convention with the wrong first-order condition leaves the
+block inconsistent.
 
 %======================================================================
 \section{Conclusion}\label{sec:conclusion}
 %======================================================================
-The replication reproduces the St.\ Louis Fed DSGE model's estimation, historical decompositions, FEVD,
-impulse responses, and natural-rate comparisons, and matches the forecast table up to a small set of
-differences that are each traceable to one identified parameter or data input, and in each case the
-replication's value is the more data-consistent one.  The full derivations, including the steady-state
-recipe used to re-target the model, follow in the Appendix.
-
-\newpage
+The replication reproduces the model's estimation, historical decompositions, FEVD, impulse responses
+and natural-rate comparisons, and matches the forecast table up to a small set of differences, each
+traceable to one identified parameter or data input and in each case the more data-consistent value.
+The full derivations follow in the Appendix.
 
 %======================================================================
-\section*{References (indicative)}\label{sec:refs}
+\section*{References}\label{sec:refs}
 \addcontentsline{toc}{section}{References}
 %======================================================================
 \begin{footnotesize}
@@ -525,8 +585,7 @@ conditions, from explicit sequence-form Lagrangians through detrending and the b
 state. The material keeps the paper's notation and equation numbers: boxed results tagged (P-$n$)
 reproduce the paper's equation $n$, and ``eq.\ ($n$)'' in the prose refers to the paper. The
 steady-state recipe referenced in Section~\ref{sec:estimation} is
-Appendix~\ref{sec:ss}. Three internal tensions in the published model are flagged in
-Remarks~\ref{rem:util}, \ref{rem:nomsdf}, and \ref{rem:wagess}.
+Appendix~\ref{sec:ss}.
 
 \input{app_derivations.tex}
 
