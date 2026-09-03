@@ -15,7 +15,19 @@ TWO SERIES ARE NOT ON FRED; they are downloaded and parsed by load_fernald_spf.p
         (If the file has no capital-share column, a constant alpha=1/3 is used; the
          difference is absorbed by the estimated TFP measurement error.)
     * SPF 10y mean CPI expectations (Philadelphia Fed Mean_CPI10_Level.xlsx),
-      mapped to headline PCE by subtracting 0.5.  Available from 1979Q4.
+      mapped to HEADLINE PCE by subtracting a constant 0.5pp -- the paper's
+      footnote 13, following Del Negro et al. (2017): 0.5 is "the average
+      difference between CPI and PCE inflation over the sample".  The series is
+      an input to eq. (109), which is an expectation of Pi_h (headline), NOT of
+      core Pi; core PCE enters separately as obs_pi (eq. 105).
+      SAMPLE-START DISCREPANCY, UNRESOLVED: footnote 13 states the series is
+      "only available from 1979Q4 onwards", but Mean_CPI10_Level.xlsx (SPF
+      CPI10) begins 1991Q4, which is what this build produces.  The paper may
+      splice an earlier long-range survey (Blue Chip's 10y CPI forecast starts
+      ~1979Q4) for 1979Q4-1991Q3.  The missing 48 quarters cover the Volcker
+      disinflation, the most informative episode for identifying the
+      time-varying target Pi_star, so this gap is a candidate explanation for
+      the difference between our Pi_star path and the paper's.  Ask the author.
 
 The observation equations these must match (see the .mod, eqs 97-111):
     obs_gdp  = 400*dlog(gdp_pc_real)
@@ -104,20 +116,14 @@ obs["obs_tfp"] = np.nan
 obs["obs_inflexp"] = np.nan
 
 # obs_tfp (106): Fernald model-consistent, utilization-adjusted TFP growth (quarterly), demeaned
-try:
-    from load_fernald_spf import load_fernald_tfp
-    tfp = load_fernald_tfp()                       # quarterly log growth (deduped index)
-    obs["obs_tfp"] = tfp.reindex(obs.index)
-    obs["obs_tfp"] = obs["obs_tfp"] - obs["obs_tfp"].mean()
-except Exception as e:
-    print("[warn] Fernald TFP not loaded (obs_tfp left NaN):", e)
+from load_fernald_spf import load_fernald_tfp   # hard dependency: see data/README
+tfp = load_fernald_tfp()                           # quarterly log growth (deduped index)
+obs["obs_tfp"] = tfp.reindex(obs.index)
+obs["obs_tfp"] = obs["obs_tfp"] - obs["obs_tfp"].mean()
 
 # obs_inflexp (109): SPF 10y-ahead CPI expectation - 0.5 (PCE)
-try:
-    from load_fernald_spf import load_spf_cpi10
-    obs["obs_inflexp"] = load_spf_cpi10().reindex(obs.index)
-except Exception as e:
-    print("[warn] SPF expectations not loaded (obs_inflexp left NaN):", e)
+from load_fernald_spf import load_spf_cpi10    # hard dependency: see data/README
+obs["obs_inflexp"] = load_spf_cpi10().reindex(obs.index)
 
 # ---- COVID special-shock observables (Section 4.3): 0 outside the active windows,
 #      NaN (missing) inside, so the Kalman smoother infers the shock only then ----
@@ -140,6 +146,16 @@ order = ["obs_gdp","obs_c","obs_i","obs_g","obs_tr","obs_w","obs_n","obs_ffr",
          "obs_pi","obs_tfp","obs_oil","obs_gas","obs_inflexp","obs_tr10","obs_cy",
          "ec_chi","ec_tr","ec_gn"]
 obs = obs[order]
+
+# ---- fail loudly rather than writing a silently unusable dataset ----
+_empty = [c for c in order if c not in ("ec_chi", "ec_tr", "ec_gn") and obs[c].notna().sum() == 0]
+if _empty:
+    raise RuntimeError(
+        "These observables are entirely missing: " + ", ".join(_empty) +
+        ".  Dynare would run on NaN columns and the estimation would be wrong.  "
+        "Check the FRED key and that data/load_fernald_spf.py is importable."
+    )
+
 obs.to_csv("usdata_1959_2026.csv")
 try:
     from scipy.io import savemat
